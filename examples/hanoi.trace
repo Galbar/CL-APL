@@ -1,0 +1,128 @@
+main() <entry point>
+|   hanoi(n=5, from=1, aux=2, to=3, &mov=0) <line 4>
+|   |   hanoi(n=4, from=1, aux=2, to=3, &mov=0) <line 10>
+|   |   |   hanoi(n=3, from=1, aux=2, to=3, &mov=0) <line 10>
+|   |   |   |   hanoi(n=2, from=1, aux=2, to=3, &mov=0) <line 10>
+|   |   |   |   |   hanoi(n=1, from=1, aux=2, to=3, &mov=0) <line 10>
+|   |   |   |   |   |   hanoi(n=0, from=1, aux=2, to=3, &mov=0) <line 10>
+|   |   |   |   |   |   return, &mov=0 <line 9>
+|   |   |   |   |   |   hanoi(n=0, from=2, aux=3, to=1, &mov=1) <line 14>
+|   |   |   |   |   |   return, &mov=1 <line 9>
+|   |   |   |   |   return, &mov=1 <line 9>
+|   |   |   |   |   hanoi(n=1, from=2, aux=3, to=1, &mov=2) <line 14>
+|   |   |   |   |   |   hanoi(n=0, from=2, aux=3, to=1, &mov=2) <line 10>
+|   |   |   |   |   |   return, &mov=2 <line 9>
+|   |   |   |   |   |   hanoi(n=0, from=3, aux=1, to=2, &mov=3) <line 14>
+|   |   |   |   |   |   return, &mov=3 <line 9>
+|   |   |   |   |   return, &mov=3 <line 9>
+|   |   |   |   return, &mov=3 <line 9>
+|   |   |   |   hanoi(n=2, from=2, aux=3, to=1, &mov=4) <line 14>
+|   |   |   |   |   hanoi(n=1, from=2, aux=3, to=1, &mov=4) <line 10>
+|   |   |   |   |   |   hanoi(n=0, from=2, aux=3, to=1, &mov=4) <line 10>
+|   |   |   |   |   |   return, &mov=4 <line 9>
+|   |   |   |   |   |   hanoi(n=0, from=3, aux=1, to=2, &mov=5) <line 14>
+|   |   |   |   |   |   return, &mov=5 <line 9>
+|   |   |   |   |   return, &mov=5 <line 9>
+|   |   |   |   |   hanoi(n=1, from=3, aux=1, to=2, &mov=6) <line 14>
+|   |   |   |   |   |   hanoi(n=0, from=3, aux=1, to=2, &mov=6) <line 10>
+|   |   |   |   |   |   return, &mov=6 <line 9>
+|   |   |   |   |   |   hanoi(n=0, from=1, aux=2, to=3, &mov=7) <line 14>
+|   |   |   |   |   |   return, &mov=7 <line 9>
+|   |   |   |   |   return, &mov=7 <line 9>
+|   |   |   |   return, &mov=7 <line 9>
+|   |   |   return, &mov=7 <line 9>
+|   |   |   hanoi(n=3, from=2, aux=3, to=1, &mov=8) <line 14>
+|   |   |   |   hanoi(n=2, from=2, aux=3, to=1, &mov=8) <line 10>
+|   |   |   |   |   hanoi(n=1, from=2, aux=3, to=1, &mov=8) <line 10>
+|   |   |   |   |   |   hanoi(n=0, from=2, aux=3, to=1, &mov=8) <line 10>
+|   |   |   |   |   |   return, &mov=8 <line 9>
+|   |   |   |   |   |   hanoi(n=0, from=3, aux=1, to=2, &mov=9) <line 14>
+|   |   |   |   |   |   return, &mov=9 <line 9>
+|   |   |   |   |   return, &mov=9 <line 9>
+|   |   |   |   |   hanoi(n=1, from=3, aux=1, to=2, &mov=10) <line 14>
+|   |   |   |   |   |   hanoi(n=0, from=3, aux=1, to=2, &mov=10) <line 10>
+|   |   |   |   |   |   return, &mov=10 <line 9>
+|   |   |   |   |   |   hanoi(n=0, from=1, aux=2, to=3, &mov=11) <line 14>
+|   |   |   |   |   |   return, &mov=11 <line 9>
+|   |   |   |   |   return, &mov=11 <line 9>
+|   |   |   |   return, &mov=11 <line 9>
+|   |   |   |   hanoi(n=2, from=3, aux=1, to=2, &mov=12) <line 14>
+|   |   |   |   |   hanoi(n=1, from=3, aux=1, to=2, &mov=12) <line 10>
+|   |   |   |   |   |   hanoi(n=0, from=3, aux=1, to=2, &mov=12) <line 10>
+|   |   |   |   |   |   return, &mov=12 <line 9>
+|   |   |   |   |   |   hanoi(n=0, from=1, aux=2, to=3, &mov=13) <line 14>
+|   |   |   |   |   |   return, &mov=13 <line 9>
+|   |   |   |   |   return, &mov=13 <line 9>
+|   |   |   |   |   hanoi(n=1, from=1, aux=2, to=3, &mov=14) <line 14>
+|   |   |   |   |   |   hanoi(n=0, from=1, aux=2, to=3, &mov=14) <line 10>
+|   |   |   |   |   |   return, &mov=14 <line 9>
+|   |   |   |   |   |   hanoi(n=0, from=2, aux=3, to=1, &mov=15) <line 14>
+|   |   |   |   |   |   return, &mov=15 <line 9>
+|   |   |   |   |   return, &mov=15 <line 9>
+|   |   |   |   return, &mov=15 <line 9>
+|   |   |   return, &mov=15 <line 9>
+|   |   return, &mov=15 <line 9>
+|   |   hanoi(n=4, from=2, aux=3, to=1, &mov=16) <line 14>
+|   |   |   hanoi(n=3, from=2, aux=3, to=1, &mov=16) <line 10>
+|   |   |   |   hanoi(n=2, from=2, aux=3, to=1, &mov=16) <line 10>
+|   |   |   |   |   hanoi(n=1, from=2, aux=3, to=1, &mov=16) <line 10>
+|   |   |   |   |   |   hanoi(n=0, from=2, aux=3, to=1, &mov=16) <line 10>
+|   |   |   |   |   |   return, &mov=16 <line 9>
+|   |   |   |   |   |   hanoi(n=0, from=3, aux=1, to=2, &mov=17) <line 14>
+|   |   |   |   |   |   return, &mov=17 <line 9>
+|   |   |   |   |   return, &mov=17 <line 9>
+|   |   |   |   |   hanoi(n=1, from=3, aux=1, to=2, &mov=18) <line 14>
+|   |   |   |   |   |   hanoi(n=0, from=3, aux=1, to=2, &mov=18) <line 10>
+|   |   |   |   |   |   return, &mov=18 <line 9>
+|   |   |   |   |   |   hanoi(n=0, from=1, aux=2, to=3, &mov=19) <line 14>
+|   |   |   |   |   |   return, &mov=19 <line 9>
+|   |   |   |   |   return, &mov=19 <line 9>
+|   |   |   |   return, &mov=19 <line 9>
+|   |   |   |   hanoi(n=2, from=3, aux=1, to=2, &mov=20) <line 14>
+|   |   |   |   |   hanoi(n=1, from=3, aux=1, to=2, &mov=20) <line 10>
+|   |   |   |   |   |   hanoi(n=0, from=3, aux=1, to=2, &mov=20) <line 10>
+|   |   |   |   |   |   return, &mov=20 <line 9>
+|   |   |   |   |   |   hanoi(n=0, from=1, aux=2, to=3, &mov=21) <line 14>
+|   |   |   |   |   |   return, &mov=21 <line 9>
+|   |   |   |   |   return, &mov=21 <line 9>
+|   |   |   |   |   hanoi(n=1, from=1, aux=2, to=3, &mov=22) <line 14>
+|   |   |   |   |   |   hanoi(n=0, from=1, aux=2, to=3, &mov=22) <line 10>
+|   |   |   |   |   |   return, &mov=22 <line 9>
+|   |   |   |   |   |   hanoi(n=0, from=2, aux=3, to=1, &mov=23) <line 14>
+|   |   |   |   |   |   return, &mov=23 <line 9>
+|   |   |   |   |   return, &mov=23 <line 9>
+|   |   |   |   return, &mov=23 <line 9>
+|   |   |   return, &mov=23 <line 9>
+|   |   |   hanoi(n=3, from=3, aux=1, to=2, &mov=24) <line 14>
+|   |   |   |   hanoi(n=2, from=3, aux=1, to=2, &mov=24) <line 10>
+|   |   |   |   |   hanoi(n=1, from=3, aux=1, to=2, &mov=24) <line 10>
+|   |   |   |   |   |   hanoi(n=0, from=3, aux=1, to=2, &mov=24) <line 10>
+|   |   |   |   |   |   return, &mov=24 <line 9>
+|   |   |   |   |   |   hanoi(n=0, from=1, aux=2, to=3, &mov=25) <line 14>
+|   |   |   |   |   |   return, &mov=25 <line 9>
+|   |   |   |   |   return, &mov=25 <line 9>
+|   |   |   |   |   hanoi(n=1, from=1, aux=2, to=3, &mov=26) <line 14>
+|   |   |   |   |   |   hanoi(n=0, from=1, aux=2, to=3, &mov=26) <line 10>
+|   |   |   |   |   |   return, &mov=26 <line 9>
+|   |   |   |   |   |   hanoi(n=0, from=2, aux=3, to=1, &mov=27) <line 14>
+|   |   |   |   |   |   return, &mov=27 <line 9>
+|   |   |   |   |   return, &mov=27 <line 9>
+|   |   |   |   return, &mov=27 <line 9>
+|   |   |   |   hanoi(n=2, from=1, aux=2, to=3, &mov=28) <line 14>
+|   |   |   |   |   hanoi(n=1, from=1, aux=2, to=3, &mov=28) <line 10>
+|   |   |   |   |   |   hanoi(n=0, from=1, aux=2, to=3, &mov=28) <line 10>
+|   |   |   |   |   |   return, &mov=28 <line 9>
+|   |   |   |   |   |   hanoi(n=0, from=2, aux=3, to=1, &mov=29) <line 14>
+|   |   |   |   |   |   return, &mov=29 <line 9>
+|   |   |   |   |   return, &mov=29 <line 9>
+|   |   |   |   |   hanoi(n=1, from=2, aux=3, to=1, &mov=30) <line 14>
+|   |   |   |   |   |   hanoi(n=0, from=2, aux=3, to=1, &mov=30) <line 10>
+|   |   |   |   |   |   return, &mov=30 <line 9>
+|   |   |   |   |   |   hanoi(n=0, from=3, aux=1, to=2, &mov=31) <line 14>
+|   |   |   |   |   |   return, &mov=31 <line 9>
+|   |   |   |   |   return, &mov=31 <line 9>
+|   |   |   |   return, &mov=31 <line 9>
+|   |   |   return, &mov=31 <line 9>
+|   |   return, &mov=31 <line 9>
+|   return, &mov=31 <line 9>
+return <line 5>

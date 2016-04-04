@@ -1,0 +1,188 @@
+digraph {
+
+	ordering=out;
+	ranksep=.4;
+	bgcolor="lightgrey"; node [shape=box, fixedsize=false, fontsize=12, fontname="Helvetica-bold", fontcolor="blue"
+		width=.25, height=.25, color="black", fillcolor="white", style="filled, solid, bold"];
+	edge [arrowsize=.5, color="black", style="bold"]
+
+  n0 [label="LIST_FUNCTIONS"];
+  n1 [label="func"];
+  n1 [label="func"];
+  n2 [label="ack"];
+  n3 [label="PARAMS"];
+  n3 [label="PARAMS"];
+  n4 [label="m"];
+  n5 [label="n"];
+  n6 [label="LIST_INSTR"];
+  n6 [label="LIST_INSTR"];
+  n7 [label="if"];
+  n7 [label="if"];
+  n8 [label="="];
+  n8 [label="="];
+  n9 [label="m"];
+  n10 [label="0"];
+  n11 [label="LIST_INSTR"];
+  n11 [label="LIST_INSTR"];
+  n12 [label="return"];
+  n12 [label="return"];
+  n13 [label="+"];
+  n13 [label="+"];
+  n14 [label="n"];
+  n15 [label="1"];
+  n16 [label="if"];
+  n16 [label="if"];
+  n17 [label="="];
+  n17 [label="="];
+  n18 [label="n"];
+  n19 [label="0"];
+  n20 [label="LIST_INSTR"];
+  n20 [label="LIST_INSTR"];
+  n21 [label="return"];
+  n21 [label="return"];
+  n22 [label="FUNCALL"];
+  n22 [label="FUNCALL"];
+  n23 [label="ack"];
+  n24 [label="ARGLIST"];
+  n24 [label="ARGLIST"];
+  n25 [label="-"];
+  n25 [label="-"];
+  n26 [label="m"];
+  n27 [label="1"];
+  n28 [label="1"];
+  n29 [label="return"];
+  n29 [label="return"];
+  n30 [label="FUNCALL"];
+  n30 [label="FUNCALL"];
+  n31 [label="ack"];
+  n32 [label="ARGLIST"];
+  n32 [label="ARGLIST"];
+  n33 [label="-"];
+  n33 [label="-"];
+  n34 [label="m"];
+  n35 [label="1"];
+  n36 [label="FUNCALL"];
+  n36 [label="FUNCALL"];
+  n37 [label="ack"];
+  n38 [label="ARGLIST"];
+  n38 [label="ARGLIST"];
+  n39 [label="m"];
+  n40 [label="-"];
+  n40 [label="-"];
+  n41 [label="n"];
+  n42 [label="1"];
+  n43 [label="func"];
+  n43 [label="func"];
+  n44 [label="main"];
+  n45 [label="PARAMS"];
+  n46 [label="LIST_INSTR"];
+  n46 [label="LIST_INSTR"];
+  n47 [label="write"];
+  n47 [label="write"];
+  n48 [label="\"Enter m and n: \""];
+  n49 [label="read"];
+  n49 [label="read"];
+  n50 [label="m"];
+  n51 [label="read"];
+  n51 [label="read"];
+  n52 [label="n"];
+  n53 [label="write"];
+  n53 [label="write"];
+  n54 [label="\"A(\""];
+  n55 [label="write"];
+  n55 [label="write"];
+  n56 [label="m"];
+  n57 [label="write"];
+  n57 [label="write"];
+  n58 [label="\",\""];
+  n59 [label="write"];
+  n59 [label="write"];
+  n60 [label="n"];
+  n61 [label="write"];
+  n61 [label="write"];
+  n62 [label="\")=\""];
+  n63 [label="write"];
+  n63 [label="write"];
+  n64 [label="FUNCALL"];
+  n64 [label="FUNCALL"];
+  n65 [label="ack"];
+  n66 [label="ARGLIST"];
+  n66 [label="ARGLIST"];
+  n67 [label="m"];
+  n68 [label="n"];
+  n69 [label="write"];
+  n69 [label="write"];
+  n70 [label="\"%n\""];
+
+  n0 -> n1 // "LIST_FUNCTIONS" -> "func"
+  n1 -> n2 // "func" -> "ack"
+  n1 -> n3 // "func" -> "PARAMS"
+  n3 -> n4 // "PARAMS" -> "m"
+  n3 -> n5 // "PARAMS" -> "n"
+  n1 -> n6 // "func" -> "LIST_INSTR"
+  n6 -> n7 // "LIST_INSTR" -> "if"
+  n7 -> n8 // "if" -> "="
+  n8 -> n9 // "=" -> "m"
+  n8 -> n10 // "=" -> "0"
+  n7 -> n11 // "if" -> "LIST_INSTR"
+  n11 -> n12 // "LIST_INSTR" -> "return"
+  n12 -> n13 // "return" -> "+"
+  n13 -> n14 // "+" -> "n"
+  n13 -> n15 // "+" -> "1"
+  n6 -> n16 // "LIST_INSTR" -> "if"
+  n16 -> n17 // "if" -> "="
+  n17 -> n18 // "=" -> "n"
+  n17 -> n19 // "=" -> "0"
+  n16 -> n20 // "if" -> "LIST_INSTR"
+  n20 -> n21 // "LIST_INSTR" -> "return"
+  n21 -> n22 // "return" -> "FUNCALL"
+  n22 -> n23 // "FUNCALL" -> "ack"
+  n22 -> n24 // "FUNCALL" -> "ARGLIST"
+  n24 -> n25 // "ARGLIST" -> "-"
+  n25 -> n26 // "-" -> "m"
+  n25 -> n27 // "-" -> "1"
+  n24 -> n28 // "ARGLIST" -> "1"
+  n6 -> n29 // "LIST_INSTR" -> "return"
+  n29 -> n30 // "return" -> "FUNCALL"
+  n30 -> n31 // "FUNCALL" -> "ack"
+  n30 -> n32 // "FUNCALL" -> "ARGLIST"
+  n32 -> n33 // "ARGLIST" -> "-"
+  n33 -> n34 // "-" -> "m"
+  n33 -> n35 // "-" -> "1"
+  n32 -> n36 // "ARGLIST" -> "FUNCALL"
+  n36 -> n37 // "FUNCALL" -> "ack"
+  n36 -> n38 // "FUNCALL" -> "ARGLIST"
+  n38 -> n39 // "ARGLIST" -> "m"
+  n38 -> n40 // "ARGLIST" -> "-"
+  n40 -> n41 // "-" -> "n"
+  n40 -> n42 // "-" -> "1"
+  n0 -> n43 // "LIST_FUNCTIONS" -> "func"
+  n43 -> n44 // "func" -> "main"
+  n43 -> n45 // "func" -> "PARAMS"
+  n43 -> n46 // "func" -> "LIST_INSTR"
+  n46 -> n47 // "LIST_INSTR" -> "write"
+  n47 -> n48 // "write" -> "\"Enter m and n: \""
+  n46 -> n49 // "LIST_INSTR" -> "read"
+  n49 -> n50 // "read" -> "m"
+  n46 -> n51 // "LIST_INSTR" -> "read"
+  n51 -> n52 // "read" -> "n"
+  n46 -> n53 // "LIST_INSTR" -> "write"
+  n53 -> n54 // "write" -> "\"A(\""
+  n46 -> n55 // "LIST_INSTR" -> "write"
+  n55 -> n56 // "write" -> "m"
+  n46 -> n57 // "LIST_INSTR" -> "write"
+  n57 -> n58 // "write" -> "\",\""
+  n46 -> n59 // "LIST_INSTR" -> "write"
+  n59 -> n60 // "write" -> "n"
+  n46 -> n61 // "LIST_INSTR" -> "write"
+  n61 -> n62 // "write" -> "\")=\""
+  n46 -> n63 // "LIST_INSTR" -> "write"
+  n63 -> n64 // "write" -> "FUNCALL"
+  n64 -> n65 // "FUNCALL" -> "ack"
+  n64 -> n66 // "FUNCALL" -> "ARGLIST"
+  n66 -> n67 // "ARGLIST" -> "m"
+  n66 -> n68 // "ARGLIST" -> "n"
+  n46 -> n69 // "LIST_INSTR" -> "write"
+  n69 -> n70 // "write" -> "\"%n\""
+
+}

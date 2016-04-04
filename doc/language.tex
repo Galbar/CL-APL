@@ -1,0 +1,124 @@
+\section{Asl}
+
+\asl\ is a very simple imperative programming language created to illustrate
+how an interpreter works. The \asl\ interpreter has been designed using
+\href{http://www.antlr.org}{ANTLR v3} and Java.
+Let us start with a simple example written in \asl.
+
+\input{factorial_asl}
+
+The program has two functions: \texttt{factorial} and \texttt{main}.
+Every program must have a \texttt{main} function without parameters
+that is identified as the primary function where the program starts
+executing.
+
+\subsection{Data types and variables}
+
+\asl\ only has two data types: \emph{integer} and \emph{Boolean}.
+It does not have any complex data structures such as arrays or structs
+(that is why the language is so simple).
+
+\asl\ is a typeless programming language, i.e., any variable can have
+values of any type and the type can change dynamically. As in many
+interpreted languages, variables are not declared. They are created
+when a value is assigned to them. Type checking is performed dynamically
+at runtime.
+
+\asl\ does not have global variables. All the variables are local within
+the function in which they are created. The only communication mechanism
+between functions is parameter passing.
+
+Functions are also typeless and they can return any type of value
+(or nothing) depending on their execution.
+
+\subsection{Assignment}
+
+It is the basic statement of an imperative language. The syntax is
+the following:
+
+\begin{quote}
+\texttt{variable = }\emph{expression}
+\end{quote}
+
+If the variable does not exist, it is created by the assignment.
+No type checking is performed with regard to the previous value of
+the variable since variables can change their type dynamically.
+
+\subsection{Input and output}
+
+\asl\ can only read from the standard input and write to the standard
+output. The \texttt{read} statement can only read integer values into
+a variable, whereas the \texttt{write} statement can either write
+a string or the value of an expression. The strings are interpreted
+in the same way as in Java using the \texttt{\%} conversion. For example,
+\texttt{\%n} is converted into a newline.
+
+\subsection{Control flow statements}
+
+The following program covers all the existing statements in the language.
+The function \texttt{is\_prime} returns a Boolean result indicating
+whether \texttt{n} is prime or not. In case it is not prime, it also writes
+the smallest prime divisor of the number.
+
+\input{prime_asl}
+
+\noindent There are three statements for control flow:
+\begin{quote}
+\texttt{if} \emph{expression} \texttt{then} \emph{list\_instructions}
+\texttt{else} \emph{list\_instructions} \texttt{endif}\\
+\\
+\texttt{while} \emph{expression} \texttt{do} \emph{list\_instructions}
+\texttt{endwhile}\\
+\\
+\texttt{return} \emph{expression}
+\end{quote}
+
+\noindent The \texttt{else} clause of the \texttt{if} statement is optional.
+The semantics of these statements is the same as the one of
+similar instructions in other programming languages.
+
+The semicolon \texttt{';'} is used to separate individual statements.
+Note that the semicolon is used to separate statements and not to
+terminate them. However, a semicolon after a final statement is also
+accepted and interpreted as a separator from an empty instruction.
+
+\subsection{Parameters}
+
+Parameters are also typeless. There are two mechanisms to pass parameters:
+by \emph{value} and by \emph{reference}. The mechanism is distinguished
+by adding the prefix \texttt{\&} in the declaration of reference
+parameters.
+
+In the previous example, the funcion \texttt{is\_prime} has one
+parameter passed by reference (\texttt{\&div}). The caller does not have
+to specify the parameter passing is by value or reference. The
+mechanism is implicitly inferred from the declaration of parameters
+in the callee.
+
+Expressions can be passed by value, whereas only variables can be
+passed by reference.
+
+\subsection{Expressions}
+
+Expressions are written as sequences of operands and operators.
+\asl\ has a rich set of logical, relational and arithmetic operators.
+The following table contains all the operators in precedence order.
+The topmost operators are the ones with highest priority.
+
+\begin{center}
+\begin{tabular}{ll}
+logical negation and unary sign & \texttt{not}, \texttt{+}, \texttt{-} \\
+multiplicative arithmetic operations & \texttt{*}, \texttt{/}, \texttt{\%}\\
+additive arithmetic operations & \texttt{+}, \texttt{-}\\
+relational operators & \texttt{=}, \texttt{!=}, \texttt{<}, \texttt{<=}, \texttt{>}, \texttt{>=}\\
+logical and & \texttt{and}\\
+logical or & \texttt{or}
+\end{tabular}
+\end{center}
+
+Type checking is done when evaluating expressions. The arithmetic
+operators require the operands to be integer, whereas the logical
+operators require the operands to be Boolean. Relational operators
+require both operands to have the same type. When comparing Boolean
+values, \emph{true} is assumed to be greater than \emph{false}.
+
