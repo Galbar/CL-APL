@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2011, Jordi Cortadella
+ * Copyright (c) 2016, Alessio Linares and Guillermo Ojeda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,8 +37,8 @@ import org.antlr.runtime.Token;
  * be extracted from the "text" fields of the tokens.
  * However, it helps to understand how to extend AST nodes in ANTLR.
  */
- 
-public class AslTree extends CommonTree {
+
+public class AplTree extends CommonTree {
     /** Field to store integer literals */
     private int intValue;
 
@@ -46,13 +46,18 @@ public class AslTree extends CommonTree {
     private String strValue;
 
     /** Constructor of the class */
-    public AslTree(Token t) {
+    public AplTree(Token t) {
         super(t);
     }
 
+    /** Function to get the parent of the node. */
+    public AplTree getParent() {
+        return (AplTree) super.getParent();
+    }
+
     /** Function to get the child of the node. */
-    public AslTree getChild(int i) {
-        return (AslTree) super.getChild(i);
+    public AplTree getChild(int i) {
+        return (AplTree) super.getChild(i);
     }
 
     /** Get the integer value of the node. */

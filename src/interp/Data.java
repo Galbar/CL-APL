@@ -47,7 +47,7 @@ public class Data {
     private static final Data default_int = new Data(0);
 
     /** Types of data */
-    public enum Type {VOID, BOOLEAN, INTEGER, ARRAY;}
+    public enum Type {VOID, BOOLEAN, INTEGER, FLOAT, ARRAY;}
 
     /** Type of data*/
     private Type type;
@@ -56,13 +56,16 @@ public class Data {
     private Type array_type;
 
     /** Value of the data */
-    private int value;
+    private float value;
 
     /** Value of the array data */
     private ArrayList<Data> array_value = null;
 
     /** Constructor for integers */
     Data(int v) { type = Type.INTEGER; value = v; }
+
+    /** Constructor for integers */
+    Data(float v) { type = Type.FLOAT; value = v; }
 
     /** Constructor for Booleans */
     Data(boolean b) { type = Type.BOOLEAN; value = b ? 1 : 0; }
@@ -125,7 +128,7 @@ public class Data {
      */
     public int getIntegerValue() {
         assert type == Type.INTEGER;
-        return value;
+        return (int)value;
     }
 
     /**
@@ -200,7 +203,7 @@ public class Data {
             return str.concat("]");
         }
         if (type == Type.BOOLEAN) return value == 1 ? "true" : "false";
-        return Integer.toString(value);
+        return Float.toString(value);
     }
 
     /**
@@ -221,11 +224,11 @@ public class Data {
     public void evaluateArithmetic (int op, Data d) {
         assert type == Type.INTEGER && d.type == Type.INTEGER;
         switch (op) {
-            case AslLexer.PLUS: value += d.value; break;
-            case AslLexer.MINUS: value -= d.value; break;
-            case AslLexer.MUL: value *= d.value; break;
-            case AslLexer.DIV: checkDivZero(d); value /= d.value; break;
-            case AslLexer.MOD: checkDivZero(d); value %= d.value; break;
+            case AplLexer.PLUS: value += d.value; break;
+            case AplLexer.MINUS: value -= d.value; break;
+            case AplLexer.MUL: value *= d.value; break;
+            case AplLexer.DIV: checkDivZero(d); value /= d.value; break;
+            case AplLexer.MOD: checkDivZero(d); value %= d.value; break;
             default: assert false;
         }
     }
@@ -239,12 +242,12 @@ public class Data {
     public Data evaluateRelational (int op, Data d) {
         assert type != Type.VOID && type == d.type;
         switch (op) {
-            case AslLexer.EQUAL: return new Data(value == d.value);
-            case AslLexer.NOT_EQUAL: return new Data(value != d.value);
-            case AslLexer.LT: return new Data(value < d.value);
-            case AslLexer.LE: return new Data(value <= d.value);
-            case AslLexer.GT: return new Data(value > d.value);
-            case AslLexer.GE: return new Data(value >= d.value);
+            case AplLexer.EQUAL: return new Data(value == d.value);
+            case AplLexer.NOT_EQUAL: return new Data(value != d.value);
+            case AplLexer.LT: return new Data(value < d.value);
+            case AplLexer.LE: return new Data(value <= d.value);
+            case AplLexer.GT: return new Data(value > d.value);
+            case AplLexer.GE: return new Data(value >= d.value);
             default: assert false;
         }
         return null;

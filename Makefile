@@ -1,4 +1,4 @@
-TARGET =	Asl
+TARGET =	Apl
 
 # Directories
 ROOT =		$(PWD)
@@ -43,14 +43,16 @@ PARSER_SRC =	$(PARSER)/$(TARGET)Lexer.java \
 				$(PARSER)/$(TARGET)Parser.java
 
 INTERP_SRC =	$(INTERP)/Interp.java \
+				$(INTERP)/AplTreeWalker.java \
+				$(INTERP)/WalkerTonto.java \
 				$(INTERP)/Stack.java \
 				$(INTERP)/Data.java \
 				$(INTERP)/$(TARGET)Tree.java \
-				$(INTERP)/AslTreeAdaptor.java
+				$(INTERP)/AplTreeAdaptor.java
 
 ALL_SRC =		$(MAIN_SRC) $(PARSER_SRC) $(INTERP_SRC)
 
-all: compile exec docs
+all: compile exec dot
 
 compile:
 	java -jar $(LIB_ANTLR) -o $(PARSER) $(GRAMMAR)
@@ -66,12 +68,19 @@ exec:
 	if [ ! -e $(BIN) ]; then\
 	  mkdir $(BIN);\
 	fi
-	echo "Main-Class: Asl.Asl" > $(MANIFEST)
+	echo "Main-Class: Apl.Apl" > $(MANIFEST)
 	echo "Class-Path: $(JARPATH)" >> $(MANIFEST)
 	cd $(CLASSDIR); jar -cmf $(MANIFEST) $(JARFILE) *
 	printf "#!/bin/sh\n\n" > $(EXEC)
 	printf 'exec java -enableassertions -jar $(JARFILE) "$$@"' >> $(EXEC)
 	chmod a+x $(EXEC)
+
+run:
+	bin/Apl -ast AST.txt -dot -noexec examples/openmp1.apl
+
+dot: run
+	dot -T pdf -o out.pdf AST.txt
+	okular out.pdf
 
 clean:
 	rm -rf $(PARSER)/*.java $(PARSER)/*.tokens 

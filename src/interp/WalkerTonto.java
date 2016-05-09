@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2011, Jordi Cortadella
+ * Copyright (c) 2016, Alessio Linares and Guillermo Ojeda
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -27,33 +27,23 @@
 
 package interp;
 
-// Imports from ANTLR
-import org.antlr.runtime.*;
 import org.antlr.runtime.tree.*;
+import org.antlr.runtime.Token;
 
-import parser.*;
+public class WalkerTonto extends AplTreeWalker {
 
-
-
-/**
- * This is the tree adaptor for the extended class of AST nodes.
- * It re-defines some required methods to cast the AST tree nodes
- * to the new AST nodes.
- */
- 
-public class AslTreeAdaptor extends CommonTreeAdaptor {
-    public Object create(Token t) {
-        return new AslTree(t);
+    public WalkerTonto(AplTree root) {
+        super(root);
     }
 
-    public Object dupNode(Object t) {
-        if ( t==null ) return null;
-        return create(((AslTree)t).token);
+    @Override
+    protected boolean onNodeStart(AplTree node) {
+        print(node.getText());
+        return true;
     }
-    
-    public Object errorNode(TokenStream input, Token start, Token stop,
-                             RecognitionException e) {
-        return null;
+
+    @Override
+    protected boolean onNodeEnd(AplTree node) {
+        return true;
     }
 }
-
