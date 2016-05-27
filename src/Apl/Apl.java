@@ -35,6 +35,8 @@ import org.antlr.stringtemplate.*;
 // Imports from Java
 import org.apache.commons.cli.*; // Command Language Interface
 import java.io.*;
+import java.lang.StringBuilder;
+import java.util.Set;
 
 // Parser and Interpreter
 import parser.*;
@@ -115,8 +117,30 @@ public class Apl{
 
         // Start interpretation (only if execution required)
         if (execute) {
-            WalkerTonto w = new WalkerTonto(t);
-            w.walk();
+            CodeAnalyzer CA = new CodeAnalyzer(t);
+            CA.parse();
+            FunctionTable table = CA.getFunctionTable();
+            Set<String> signatures = table.getSignatures();
+            StringBuilder str = new StringBuilder();
+            str.append("#include <stdio.h>\n\n");
+            for (String sig : signatures) {
+                FunctionNode fn = table.get(sig);
+                table.resolveType(fn.getData());
+                str.append(fn.getData().typeToString());
+                str.append(" ");
+                str.append(sig);
+                str.append(";\n");
+            }
+
+            str.append("\n");
+
+            for (String sig : signatures) {
+                FunctionNode fn = table.get(sig);
+                str.append(fn.toC(table));
+                str.append("\n");
+            }
+
+            System.out.print(str.toString());
         }
     }
 

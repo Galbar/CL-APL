@@ -27,6 +27,7 @@
 
 package interp;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.ListIterator;
@@ -41,10 +42,16 @@ import java.util.ListIterator;
 public class Stack {
 
     /** Stack of activation records */
-    private LinkedList<HashMap<String,Data>> Stack;
+    private LinkedList<ArrayList<Data>> StackAR;
+
+    /** Stack of symbol tables */
+    private LinkedList<HashMap<String,Integer>> StackST;
 
     /** Reference to the current activation record */
-    private HashMap<String,Data> CurrentAR = null;
+    private ArrayList<Data> CurrentAR = null;
+
+    /** Mapping of variable's new names **/
+    private HashMap<String,Integer> SymbolTable = null;
 
     /**
      * Class to represent an item of the Stack trace.
@@ -64,23 +71,30 @@ public class Stack {
 
     /** Constructor of the memory */
     public Stack() {
-        Stack = new LinkedList<HashMap<String,Data>>();
+        StackAR = new LinkedList<ArrayList<Data>>();
+        StackST = new LinkedList<HashMap<String,Integer>>();
         CurrentAR = null;
+        SymbolTable = null;
         StackTrace = new LinkedList<StackTraceItem>();
     }
 
     /** Creates a new activation record on the top of the stack */
     public void pushActivationRecord(String name, int line) {
-        CurrentAR = new HashMap<String,Data>();
-        Stack.addLast (CurrentAR);
+        CurrentAR = new ArrayList<Data>();
+        SymbolTable = new HashMap<String,Integer>();
+        StackAR.addLast (CurrentAR);
+        StackST.addLast (SymbolTable);
         StackTrace.addLast (new StackTraceItem(name, line));
     }
 
     /** Destroys the current activation record */
     public void popActivationRecord() {
-        Stack.removeLast();
-        if (Stack.isEmpty()) CurrentAR = null;
-        else CurrentAR = Stack.getLast();
+        StackAR.removeLast();
+        StackST.removeLast();
+        if (StackAR.isEmpty()) CurrentAR = null;
+        else CurrentAR = StackAR.getLast();
+        if (StackST.isEmpty()) SymbolTable = null;
+        else SymbolTable = StackST.getLast();
         StackTrace.removeLast();
     }
 
@@ -90,10 +104,33 @@ public class Stack {
      * @param name The name of the variable
      * @param value The value of the variable
      */
-    public void defineVariable(String name, Data value) {
-        Data d = CurrentAR.get(name);
-        if (d == null) CurrentAR.put(name, value); // New definition
-        else d.setData(value); // Use the previous data
+    public int defineVariable(String name, Data value) throws Warning {
+        Integer d = SymbolTable.get(name);
+        int id;
+        if (CurrentAR.get(d).isFromSignature()) {
+            // TODO: TODO IT BETTER
+            System.out.println("Warning: Type of variable `" + name + "` depends on type of function `" 
+                                + value.getFuncSignature() + "`, which hasn't been decided yet.");
+        }
+
+        if (d == null || CurrentAR.get(d).isFromSignature() || CurrentAR.get(d).getType() != value.getType()) {
+            id = CurrentAR.size();
+            SymbolTable.put(name, id); // New definition
+            CurrentAR.add(value);
+        }
+        else id = d.intValue();
+        return id;
+    }
+
+    /** Gets the value of the variable. The value is represented as
+     * a Data object. In this way, any modification of the object
+     * implicitly modifies the value of the variable.
+     * @param id The id of the variable
+     * @return The value of the variable
+     */
+    public Data getVariable(int id) {
+        assert id >= 0 && id < CurrentAR.size();
+        return CurrentAR.get(id);
     }
 
     /** Gets the value of the variable. The value is represented as
@@ -102,13 +139,23 @@ public class Stack {
      * @param name The name of the variable
      * @return The value of the variable
      */
-    public Data getVariable(String name) {
-        Data v = CurrentAR.get(name);
-        if (v == null) {
-            throw new RuntimeException ("Variable " + name + " not defined");
+    public Data getVariable(String name) throws Exception {
+        Integer id = SymbolTable.get(name);
+        if (id == null) {
+            throw new Exception("Variable " + name + " not defined.");
         }
-        return v;
+        return CurrentAR.get(id);
     }
+
+    public int getVariableID(String name) throws Exception { 
+        Integer id = SymbolTable.get(name);
+        if (id == null) {
+            throw new Exception("Variable " + name + " not defined.");
+        }
+        return id.intValue(); 
+    }
+    
+    public ArrayList<Data> getCurrentAR() { return CurrentAR; }
 
     /**
      * Generates a string with the contents of the stack trace.

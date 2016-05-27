@@ -44,31 +44,41 @@ public class Data {
         BOOL,
         INT,
         FLOAT,
-        ARRAY_CHAR,
-        ARRAY_BOOL,
-        ARRAY_INT,
-        ARRAY_FLOAT,
+        ARRAY,
         FROM_SIGNATURE;
     }
 
     /** Type of data*/
     private Type type;
-    private String funcSignature;
+    private Data subData = null;
+    private String funcSignature = null;
 
     /** Constructor for integers */
     Data(Type type) { this.type = type; }
+
+    /** Constructor for integers */
+    Data(Type type, Data subData) { this.type = type; this.subData = subData; }
 
     /** Constructor for void data */
     Data() {type = Type.VOID; }
 
     /** Copy constructor */
-    Data(Data d) {
-        type = d.type;
-        funcSignature = d.funcSignature;
-    }
+    Data(Data d) { setData(d); }
 
     /** Returns the type of data */
     public Type getType() { return type; }
+    public void setData(Data d) { 
+        if (d == null) {
+            type = Type.VOID;
+            subData = null;
+            funcSignature = null;
+            return;
+        }
+        type = d.type;
+        subData = new Data();
+        subData.setData(d.subData);
+        funcSignature = d.funcSignature;
+    }
 
     /** Defines a Boolean value for the data */
     public void setFuncSignature(String sig) {
@@ -87,35 +97,20 @@ public class Data {
 
     public String typeToString() {
         switch(type) {
-            case Type.VOID:
+            case VOID:
                 return "void";
-                break;
-            case Type.INT:
+            case INT:
                 return "int";
-                break;
-            case Type.FLOAT:
+            case FLOAT:
                 return "float";
-                break;
-            case Type.CHAR:
+            case CHAR:
                 return "char";
-                break;
-            case Type.BOOL:
+            case BOOL:
                 return "bool";
-                break;
-            case Type.ARRAY_INT:
-                return "int*";
-                break;
-            case Type.ARRAY_FLOAT:
-                return "float*";
-                break;
-            case Type.ARRAY_CHAR:
-                return "char*";
-                break;
-            case Type.ARRAY_BOOL:
-                return "bool*";
-                break;
+            case ARRAY:
+                return subData.typeToString() + "*";
             default:
-                return "unkown";
+                return "unknown";
         }
     }
 }

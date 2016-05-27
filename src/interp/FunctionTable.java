@@ -27,53 +27,32 @@
 
 package interp;
 
-public abstract class CodeNode {
-    private CodeNode parent;
-    private CodeNode down = null;
-    private CodeNode right = null;
-    private int childCount = 0;
+import java.util.HashMap;
+import java.util.Set;
 
-    public CodeNode(CodeNode parent)
-    {
-        this.parent = parent;
-    }
+public class FunctionTable {
+	private HashMap<String,FunctionNode> table;
 
-    public CodeNode getParent()
-    {
-        return parent;
-    }
+	public FunctionTable() {
+		table = new HashMap<String,FunctionNode>();
+	}
 
-    public int getNumChilds()
-    {
-        return childCount;
-    }
+	public void resolveType(Data data) {
+		if (!data.isFromSignature()) return;
+		FunctionNode fn = table.get(data.getFuncSignature());
+		resolveType(fn.getData());
+		data.setData(fn.getData());
+	}
 
-    public CodeNode getChild(int i)
-    {
-        CodeNode result = down;
-        for (int j = 0; j < i; ++j) {
-            result = result.right;
-        }
-        return result;
-    }
+	public void add(String signature, FunctionNode node) {
+		table.put(signature, node);
+	}
 
-    public void appendChild(CodeNode child)
-    {
-        if (down == null) {
-            down = child;
-        }
-        else {
-            CodeNode result = down;
-            while (result.right != null) {
-                result = result.right;
-            }
-            result.right = child;
-        }
+	public FunctionNode get(String signature) {
+		return table.get(signature);
+	}
 
-        child.parent = this;
-        childCount++;
-    }
-
-    public abstract String toC(FunctionTable table);
+	public Set<String> getSignatures() {
+		return table.keySet();
+	}
 }
-

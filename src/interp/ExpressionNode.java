@@ -27,53 +27,28 @@
 
 package interp;
 
-public abstract class CodeNode {
-    private CodeNode parent;
-    private CodeNode down = null;
-    private CodeNode right = null;
-    private int childCount = 0;
+import java.lang.StringBuilder;
 
-    public CodeNode(CodeNode parent)
+public class ExpressionNode extends CodeNode {
+    // TODO: getData que se deduce de los hijos
+
+    public ExpressionNode()
     {
-        this.parent = parent;
+        super(null);
     }
 
-    public CodeNode getParent()
-    {
-        return parent;
-    }
-
-    public int getNumChilds()
-    {
-        return childCount;
-    }
-
-    public CodeNode getChild(int i)
-    {
-        CodeNode result = down;
-        for (int j = 0; j < i; ++j) {
-            result = result.right;
+    @Override
+    public String toC(FunctionTable table) {
+        StringBuilder str = new StringBuilder();
+        if (getChildCount() == 1) {
+            str.append(getChild(0).toC(table));
+        } else {
+            str.append(getChild(1).toC(table));
+            str.append(" ");
+            str.append(getChild(0).toC(table));
+            str.append(" ");
+            str.append(getChild(2).toC(table));
         }
-        return result;
+        return str.toString();
     }
-
-    public void appendChild(CodeNode child)
-    {
-        if (down == null) {
-            down = child;
-        }
-        else {
-            CodeNode result = down;
-            while (result.right != null) {
-                result = result.right;
-            }
-            result.right = child;
-        }
-
-        child.parent = this;
-        childCount++;
-    }
-
-    public abstract String toC(FunctionTable table);
 }
-

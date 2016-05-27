@@ -42,9 +42,12 @@ MAIN_SRC =		$(MAIN)/$(TARGET).java
 PARSER_SRC =	$(PARSER)/$(TARGET)Lexer.java \
 				$(PARSER)/$(TARGET)Parser.java
 
-INTERP_SRC =	$(INTERP)/Interp.java \
-				$(INTERP)/AplTreeWalker.java \
+INTERP_SRC =	$(INTERP)/AplTreeWalker.java \
 				$(INTERP)/WalkerTonto.java \
+				$(INTERP)/CodeAnalyzer.java \
+				$(INTERP)/CodeNode.java \
+				$(INTERP)/FunctionNode.java \
+				$(INTERP)/FunctionTable.java \
 				$(INTERP)/Stack.java \
 				$(INTERP)/Data.java \
 				$(INTERP)/$(TARGET)Tree.java \
@@ -76,7 +79,7 @@ exec:
 	chmod a+x $(EXEC)
 
 run:
-	bin/Apl -ast AST.txt -dot -noexec examples/openmp1.apl
+	bin/Apl -ast AST.txt -dot examples/openmp1.apl
 
 dot: run
 	dot -T pdf -o out.pdf AST.txt
