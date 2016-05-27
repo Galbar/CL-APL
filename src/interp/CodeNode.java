@@ -27,31 +27,53 @@
 
 package interp;
 
-import org.antlr.runtime.tree.*;
-import org.antlr.runtime.Token;
+public abstract class CodeNode {
+    private CodeNode parent;
+    private CodeNode down = null;
+    private CodeNode right = null;
+    private int childCount = 0;
 
-/**
- * Class to extend the nodes of the AST. It includes two fields
- * to store the value of literals and strings.
- * This class is not strictly necessary, since the literals could
- * be extracted from the "text" fields of the tokens.
- * However, it helps to understand how to extend AST nodes in ANTLR.
- */
-
-public class AplTree extends CommonTree {
-
-    /** Constructor of the class */
-    public AplTree(Token t) {
-        super(t);
+    public CodeNode(CodeNode parent)
+    {
+        this.parent = parent;
     }
 
-    /** Function to get the parent of the node. */
-    public AplTree getParent() {
-        return (AplTree) super.getParent();
+    public CodeNode getParent()
+    {
+        return parent;
     }
 
-    /** Function to get the child of the node. */
-    public AplTree getChild(int i) {
-        return (AplTree) super.getChild(i);
+    public int getNumChilds()
+    {
+        return childCount;
     }
+
+    public CodeNode getChild(int i)
+    {
+        CodeNode result = down;
+        for (int j = 0; j < i; ++j) {
+            result = result.right;
+        }
+        return result;
+    }
+
+    public void appendChild(CodeNode child)
+    {
+        if (down == null) {
+            down = child;
+        }
+        else {
+            CodeNode result = down;
+            while (result.right != null) {
+                result = result.right;
+            }
+            result.right = child;
+        }
+
+        child.parent = this;
+        childCount++;
+    }
+
+    public abstract String toC();
 }
+
