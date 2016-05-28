@@ -27,29 +27,28 @@
 
 package interp;
 
+import parser.*;
 import java.lang.StringBuilder;
 
-public class OperatorNode extends CodeNode {
-    String op;
+public class ReturnNode extends CodeNode {
+    ExpressionNode expr;
 
-    public OperatorNode(String op)
-    {
+    public ReturnNode(ExpressionNode expr) {
         super(null);
-        switch(op) {
-            case "not":
-                this.op = "!";
-                break;
-            case "or":
-                this.op = "||";
-                break;
-            case "and":
-                this.op = "&&";
-                break;
-            default:
-                this.op = op;
+        this.expr = expr;
+        if (expr != null) {
+            this.data = expr.getData();
         }
     }
 
     @Override
-    public String toC() { return op; }
+    public String toC() {
+        StringBuilder str = new StringBuilder();
+
+        str.append("return ");
+        if (expr != null) str.append(expr.toC());
+        str.append(";\n");
+
+        return str.toString();
+    }
 }

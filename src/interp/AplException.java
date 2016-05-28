@@ -27,29 +27,8 @@
 
 package interp;
 
-import java.lang.StringBuilder;
-
-public class OperatorNode extends CodeNode {
-    String op;
-
-    public OperatorNode(String op)
-    {
-        super(null);
-        switch(op) {
-            case "not":
-                this.op = "!";
-                break;
-            case "or":
-                this.op = "||";
-                break;
-            case "and":
-                this.op = "&&";
-                break;
-            default:
-                this.op = op;
-        }
+public class AplException extends Exception {
+    public AplException(String message) {
+        super(message);
     }
-
-    @Override
-    public String toC() { return op; }
 }

@@ -29,27 +29,27 @@ package interp;
 
 import java.lang.StringBuilder;
 
-public class OperatorNode extends CodeNode {
-    String op;
+public class ArrayAccessNode extends CodeNode {
+    int varID;
+    ExpressionNode expr;
 
-    public OperatorNode(String op)
+    public ArrayAccessNode(int varID, Data data, ExpressionNode expr)
     {
         super(null);
-        switch(op) {
-            case "not":
-                this.op = "!";
-                break;
-            case "or":
-                this.op = "||";
-                break;
-            case "and":
-                this.op = "&&";
-                break;
-            default:
-                this.op = op;
-        }
+        this.varID = varID;
+        this.expr = expr;
+        this.data = data;
     }
 
     @Override
-    public String toC() { return op; }
+    public String toC() {
+        StringBuilder str = new StringBuilder();
+        str.append("var");
+        str.append((new Integer(varID)).toString());
+        str.append("[");
+        str.append(expr.toC());
+        str.append("]");
+        return str.toString();
+    }
 }
+

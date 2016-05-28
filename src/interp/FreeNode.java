@@ -27,29 +27,33 @@
 
 package interp;
 
+import parser.*;
+import java.util.ArrayList;
 import java.lang.StringBuilder;
 
-public class OperatorNode extends CodeNode {
-    String op;
-
-    public OperatorNode(String op)
-    {
+public class FreeNode extends CodeNode {
+    public FreeNode() {
         super(null);
-        switch(op) {
-            case "not":
-                this.op = "!";
-                break;
-            case "or":
-                this.op = "||";
-                break;
-            case "and":
-                this.op = "&&";
-                break;
-            default:
-                this.op = op;
-        }
     }
 
     @Override
-    public String toC() { return op; }
+    public String toC() {
+        FunctionNode function = (FunctionNode)getParent();
+
+        ArrayList<Data> variables = function.getVariables();
+        int numParams = function.getNumParams();
+
+        StringBuilder str = new StringBuilder();
+
+        for (int i = numParams; i < variables.size(); ++i) {
+            Data variable = variables.get(i);
+            if (variable.getType() == Data.Type.ARRAY) {
+                str.append("free(var");
+                str.append(Integer.toString(i));
+                str.append(");\n");
+            }
+        }
+        return str.toString();
+    }
 }
+

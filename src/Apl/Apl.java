@@ -118,14 +118,15 @@ public class Apl{
         // Start interpretation (only if execution required)
         if (execute) {
             CodeAnalyzer CA = new CodeAnalyzer(t);
-            CA.parse();
+            if (!CA.parse()) System.out.println("There has been an error when parsing the code.");
             FunctionTable table = CA.getFunctionTable();
             Set<String> signatures = table.getSignatures();
             StringBuilder str = new StringBuilder();
-            str.append("#include <stdio.h>\n\n");
+            str.append("#include <stdio.h>\n");
+            str.append("#include <stdlib.h>\n\n");
             for (String sig : signatures) {
                 FunctionNode fn = table.get(sig);
-                table.resolveType(fn.getData());
+                fn.getData().resolve();
                 str.append(fn.getData().typeToString());
                 str.append(" ");
                 str.append(sig);
@@ -136,7 +137,7 @@ public class Apl{
 
             for (String sig : signatures) {
                 FunctionNode fn = table.get(sig);
-                str.append(fn.toC(table));
+                str.append(fn.toC());
                 str.append("\n");
             }
 

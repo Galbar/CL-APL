@@ -45,13 +45,13 @@ public class Data {
         INT,
         FLOAT,
         ARRAY,
-        FROM_SIGNATURE;
+        FROM_DEPENDENCIES;
     }
 
     /** Type of data*/
     private Type type;
     private Data subData = null;
-    private String funcSignature = null;
+    private ArrayList<Data> dependencies;
 
     /** Constructor for integers */
     Data(Type type) { this.type = type; }
@@ -67,33 +67,65 @@ public class Data {
 
     /** Returns the type of data */
     public Type getType() { return type; }
-    public void setData(Data d) { 
+    public void setData(Data d) {
         if (d == null) {
             type = Type.VOID;
             subData = null;
-            funcSignature = null;
+            dependencies = null;
             return;
         }
         type = d.type;
         subData = new Data();
+        if (d.dependencies != null) {
+            dependencies = new ArrayList<Data>();
+            for (Data dep : d.dependencies) {
+                dependencies.add(new Data(dep));
+            }
+        }
         subData.setData(d.subData);
-        funcSignature = d.funcSignature;
+    }
+    public Data getSubData() { return subData; }
+
+    public boolean hasDependencies() {
+        return dependencies != null;
     }
 
-    /** Defines a Boolean value for the data */
-    public void setFuncSignature(String sig) {
-        assert isFromSignature();
-        funcSignature = sig;
+    public void resolve() {
+        if (dependencies == null) return;
+        ArrayList<Data> newDeps = null;
+        Data newData = null;
+        for (Data dep : dependencies) {
+            if (newData == null) {
+                newData = dep;
+                continue;
+            }
+
+            if (dep.hasDependencies()) {
+                if (newDeps == null) {
+                    newDeps = new ArrayList<Data>();
+                }
+                newDeps.add(dep);
+            } else {
+                newData = max(newData, dep);
+            }
+        }
+        if (newDeps == null) {
+            dependencies = null;
+            setData(newData);
+        } else {
+            dependencies = newDeps;
+            dependencies.add(newData);
+        }
     }
 
-    /** Returns the type of array */
-    public String getFuncSignature() {
-        assert isFromSignature();
-        return funcSignature;
+    public void addDependency(Data dependecy) {
+        if (dependencies == null) {
+            dependencies = new ArrayList<Data>();
+        }
+        type = Type.FROM_DEPENDENCIES;
+        dependencies.add(dependecy);
+        resolve();
     }
-
-    /** Indicates whether the data is Boolean */
-    public boolean isFromSignature() { return type == Type.FROM_SIGNATURE; }
 
     public String typeToString() {
         switch(type) {
@@ -106,11 +138,25 @@ public class Data {
             case CHAR:
                 return "char";
             case BOOL:
-                return "bool";
+                return "char";
             case ARRAY:
                 return subData.typeToString() + "*";
             default:
                 return "unknown";
         }
+    }
+
+    static public Data max(Data d1, Data d2) {
+        Data.Type t1 = d1.getType();
+        Data.Type t2 = d2.getType();
+        if (t1 == t2) return d1;
+        if (t1 == Data.Type.FLOAT) return d1;
+        if (t2 == Data.Type.FLOAT) return d2;
+        if (t1 == Data.Type.FROM_DEPENDENCIES || t2 == Data.Type.FROM_DEPENDENCIES) {
+            Data data = new Data(Data.Type.FROM_DEPENDENCIES);
+            data.addDependency(d1);
+            data.addDependency(d2);
+        }
+        return new Data(Data.Type.INT);
     }
 }

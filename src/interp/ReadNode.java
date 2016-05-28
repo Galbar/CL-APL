@@ -27,29 +27,50 @@
 
 package interp;
 
+import parser.*;
 import java.lang.StringBuilder;
 
-public class OperatorNode extends CodeNode {
-    String op;
+public class ReadNode extends CodeNode {
+    CodeNode expr;
 
-    public OperatorNode(String op)
-    {
+    public ReadNode(CodeNode expr) {
         super(null);
-        switch(op) {
-            case "not":
-                this.op = "!";
-                break;
-            case "or":
-                this.op = "||";
-                break;
-            case "and":
-                this.op = "&&";
-                break;
-            default:
-                this.op = op;
-        }
+        this.expr = expr;
     }
 
     @Override
-    public String toC() { return op; }
+    public String toC() {
+        StringBuilder str = new StringBuilder();
+        str.append("scanf(\"");
+        switch(this.expr.getData().getType()) {
+            case CHAR:
+                str.append("%c");
+                break;
+            case BOOL:
+                str.append("%i");
+                break;
+            case INT:
+                str.append("%i");
+                break;
+            case FLOAT:
+                str.append("%f");
+                break;
+            case ARRAY:
+                if (this.expr.getData().getSubData().getType() == Data.Type.CHAR) {
+                    str.append("%s");
+                }
+                break;
+        }
+        str.append("\", ");
+        switch(this.expr.getData().getType()) {
+            case ARRAY:
+                str.append(this.expr.toC());
+                break;
+            default:
+                str.append("&");
+                str.append(this.expr.toC());
+        }
+        str.append(");\n");
+        return str.toString();
+    }
 }

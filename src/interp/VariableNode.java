@@ -32,14 +32,15 @@ import java.lang.StringBuilder;
 public class VariableNode extends CodeNode {
     int varID;
 
-    public VariableNode(int varID)
+    public VariableNode(int varID, Data data)
     {
         super(null);
         this.varID = varID;
+        this.data = data;
     }
 
     @Override
-    public String toC(FunctionTable table) {
+    public String toC() {
         StringBuilder str = new StringBuilder();
         str.append("var");
         str.append((new Integer(varID)).toString());

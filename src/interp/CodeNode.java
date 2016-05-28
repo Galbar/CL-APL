@@ -32,6 +32,7 @@ public abstract class CodeNode {
     private CodeNode down = null;
     private CodeNode right = null;
     private int childCount = 0;
+    protected Data data = new Data(Data.Type.VOID);
 
     public CodeNode(CodeNode parent)
     {
@@ -74,6 +75,7 @@ public abstract class CodeNode {
         childCount++;
     }
 
-    public abstract String toC(FunctionTable table);
+    public Data getData() { return data; }
+    public abstract String toC();
 }
 

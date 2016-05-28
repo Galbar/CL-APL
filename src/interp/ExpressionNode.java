@@ -29,6 +29,7 @@ package interp;
 
 import java.lang.StringBuilder;
 
+
 public class ExpressionNode extends CodeNode {
     // TODO: getData que se deduce de los hijos
 
@@ -37,17 +38,49 @@ public class ExpressionNode extends CodeNode {
         super(null);
     }
 
-    @Override
-    public String toC(FunctionTable table) {
-        StringBuilder str = new StringBuilder();
-        if (getChildCount() == 1) {
-            str.append(getChild(0).toC(table));
+    public Data getData() {
+        if (data.getType() != Data.Type.VOID) { return data; }
+
+        if (getNumChilds() == 1) {
+            data = getChild(0).getData();
+            return data;
         } else {
-            str.append(getChild(1).toC(table));
-            str.append(" ");
-            str.append(getChild(0).toC(table));
-            str.append(" ");
-            str.append(getChild(2).toC(table));
+            String op = getChild(0).toC();
+            if (op.equals("==") || op.equals("!=")
+                || op.equals("<=") || op.equals(">=")
+                || op.equals("<") || op.equals(">")
+                || op.equals("||") || op.equals("&&")
+                || op.equals("!")) {
+                data = new Data(Data.Type.BOOL);
+                return data;
+            } else if (getNumChilds() == 2) {
+                data = getChild(1).getData();
+                return data;
+            } else {
+                data = Data.max(getChild(1).getData(), getChild(2).getData());
+                return data;
+            }
+        }
+    }
+
+    @Override
+    public String toC() {
+        StringBuilder str = new StringBuilder();
+        switch (getNumChilds()) {
+            case 1:
+                str.append(getChild(0).toC());
+                break;
+            case 2:
+                str.append(getChild(0).toC());
+                str.append(" ");
+                str.append(getChild(1).toC());
+                break;
+            default:
+                str.append(getChild(1).toC());
+                str.append(" ");
+                str.append(getChild(0).toC());
+                str.append(" ");
+                str.append(getChild(2).toC());
         }
         return str.toString();
     }

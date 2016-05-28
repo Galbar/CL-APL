@@ -104,22 +104,39 @@ public class Stack {
      * @param name The name of the variable
      * @param value The value of the variable
      */
-    public int defineVariable(String name, Data value) throws Warning {
+    public int defineVariable(String name, Data value) {
         Integer d = SymbolTable.get(name);
         int id;
-        if (CurrentAR.get(d).isFromSignature()) {
-            // TODO: TODO IT BETTER
-            System.out.println("Warning: Type of variable `" + name + "` depends on type of function `" 
-                                + value.getFuncSignature() + "`, which hasn't been decided yet.");
-        }
 
-        if (d == null || CurrentAR.get(d).isFromSignature() || CurrentAR.get(d).getType() != value.getType()) {
+        if (d == null
+            || CurrentAR.get(d).hasDependencies()
+            || CurrentAR.get(d).getType() != value.getType()
+            || CurrentAR.get(d).getType() == Data.Type.ARRAY) {
             id = CurrentAR.size();
             SymbolTable.put(name, id); // New definition
             CurrentAR.add(value);
+        } else {
+            if (CurrentAR.get(d).hasDependencies()) {
+                // TODO: TODO IT BETTER
+                System.out.println("Warning: Type of variable `" + name + "` depends on types that haven't been decided yet.");
+            }
+            id = d.intValue();
         }
-        else id = d.intValue();
+
         return id;
+    }
+
+    public int setArrayElement(String name, Data value) throws AplException {
+        Integer d = SymbolTable.get(name);
+
+        if (d == null
+            || ( CurrentAR.get(d).getType() != Data.Type.ARRAY
+                && CurrentAR.get(d).getSubData().getType() != value.getType() ) ) {
+            throw new AplException("Assigning value to an element of an inexistent array with name`" + name + "`.");
+        } else if (CurrentAR.get(d).hasDependencies()) {
+            System.out.println("Warning: Type of variable `" + name + "` depends on types that haven't been decided yet.");
+        }
+        return d.intValue();
     }
 
     /** Gets the value of the variable. The value is represented as
@@ -139,22 +156,22 @@ public class Stack {
      * @param name The name of the variable
      * @return The value of the variable
      */
-    public Data getVariable(String name) throws Exception {
+    public Data getVariable(String name) throws AplException {
         Integer id = SymbolTable.get(name);
         if (id == null) {
-            throw new Exception("Variable " + name + " not defined.");
+            throw new AplException("Variable " + name + " not defined.");
         }
         return CurrentAR.get(id);
     }
 
-    public int getVariableID(String name) throws Exception { 
+    public int getVariableID(String name) throws AplException {
         Integer id = SymbolTable.get(name);
         if (id == null) {
-            throw new Exception("Variable " + name + " not defined.");
+            throw new AplException("Variable " + name + " not defined.");
         }
-        return id.intValue(); 
+        return id.intValue();
     }
-    
+
     public ArrayList<Data> getCurrentAR() { return CurrentAR; }
 
     /**

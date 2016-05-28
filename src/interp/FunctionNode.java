@@ -34,7 +34,6 @@ public class FunctionNode extends CodeNode {
     private String name;
     private ArrayList<Data> variables;
     private int numParams;
-    private Data type;
 
     public FunctionNode(String name, int numParams, ArrayList<Data> variables)
     {
@@ -42,43 +41,54 @@ public class FunctionNode extends CodeNode {
         this.name = name;
         this.numParams = numParams;
         this.variables = variables;
-        this.type = new Data();
+        this.data = new Data();
     }
 
-    public Data getData() { return type; }
+    public ArrayList<Data> getVariables() {
+        return variables;
+    }
+
+    public int getNumParams() {
+        return numParams;
+    }
 
     @Override
-    public String toC(FunctionTable table) {
+    public String toC() {
         StringBuilder str = new StringBuilder();
-        table.resolveType(type);
-        str.append(type.typeToString());
+        data.resolve();
+
+        // Function header
+        str.append(data.typeToString());
         str.append(" ");
         str.append(name);
         str.append(" (");
         for (int i = 0; i < numParams; ++i) {
             Data dVar = variables.get(i);
-            table.resolveType(dVar);
+            dVar.resolve();
             if (i != 0) str.append(", ");
             str.append(dVar.typeToString());
             str.append(" var");
             str.append((new Integer(i)).toString());
         }
         str.append(")\n{\n");
-        
+
         // Variable definitions
         for (int i = numParams; i < variables.size(); ++i) {
             Integer key = new Integer(i);
             Data value = variables.get(i);
-            table.resolveType(value);
+            value.resolve();
             str.append(value.typeToString());
             str.append(" var");
             str.append(key.toString());
+            if (value.getType() == Data.Type.ARRAY) {
+                str.append(" = NULL");
+            }
             str.append(";\n");
         }
 
         // Intructions
         for (int i = 0; i < getNumChilds(); ++i) {
-            str.append(getChild(i).toC(table));
+            str.append(getChild(i).toC());
         }
 
         str.append("}\n");

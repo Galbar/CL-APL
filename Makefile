@@ -45,13 +45,13 @@ PARSER_SRC =	$(PARSER)/$(TARGET)Lexer.java \
 INTERP_SRC =	$(INTERP)/AplTreeWalker.java \
 				$(INTERP)/WalkerTonto.java \
 				$(INTERP)/CodeAnalyzer.java \
-				$(INTERP)/CodeNode.java \
-				$(INTERP)/FunctionNode.java \
 				$(INTERP)/FunctionTable.java \
 				$(INTERP)/Stack.java \
 				$(INTERP)/Data.java \
 				$(INTERP)/$(TARGET)Tree.java \
-				$(INTERP)/AplTreeAdaptor.java
+				$(INTERP)/AplTreeAdaptor.java \
+				$(INTERP)/AplException.java \
+				$(shell find $(INTERP) -name '*Node.java')
 
 ALL_SRC =		$(MAIN_SRC) $(PARSER_SRC) $(INTERP_SRC)
 
@@ -83,7 +83,7 @@ run:
 
 dot: run
 	dot -T pdf -o out.pdf AST.txt
-	okular out.pdf
+	evince out.pdf
 
 clean:
 	rm -rf $(PARSER)/*.java $(PARSER)/*.tokens 

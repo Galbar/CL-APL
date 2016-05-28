@@ -29,27 +29,26 @@ package interp;
 
 import java.lang.StringBuilder;
 
-public class OperatorNode extends CodeNode {
-    String op;
+public class ArrayNode extends CodeNode {
+    ExpressionNode expr;
 
-    public OperatorNode(String op)
+    public ArrayNode(Data data, ExpressionNode expr)
     {
         super(null);
-        switch(op) {
-            case "not":
-                this.op = "!";
-                break;
-            case "or":
-                this.op = "||";
-                break;
-            case "and":
-                this.op = "&&";
-                break;
-            default:
-                this.op = op;
-        }
+        this.data = data;
+        this.expr = expr;
     }
 
     @Override
-    public String toC() { return op; }
+    public String toC() {
+        StringBuilder str = new StringBuilder();
+        str.append("malloc(");
+        str.append(expr.toC());
+        str.append(" * sizeof(");
+        str.append(data.getSubData().typeToString());
+        str.append("))");
+        return str.toString();
+    }
 }
+
+

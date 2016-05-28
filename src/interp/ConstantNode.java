@@ -27,19 +27,36 @@
 
 package interp;
 
+import parser.*;
 import java.lang.StringBuilder;
 
 public class ConstantNode extends CodeNode {
     String value;
 
-    public ConstantNode(String value)
+    public ConstantNode(AplTree value)
     {
         super(null);
-        this.value = value;
-        // TODO: Deducir/decidir el tipo de value.
-        // TODO: getData y tAl
+        this.value = value.getText();
+        switch (value.getType()) {
+            case AplLexer.INT:
+                data = new Data(Data.Type.INT);
+                break;
+            case AplLexer.FLOAT:
+                data = new Data(Data.Type.FLOAT);
+                break;
+            case AplLexer.CHAR:
+                data = new Data(Data.Type.CHAR);
+                break;
+            case AplLexer.STRING:
+                data = new Data(Data.Type.ARRAY, new Data(Data.Type.CHAR));
+                break;
+            case AplLexer.BOOLEAN:
+                data = new Data(Data.Type.BOOL);
+                this.value = value.getText().equals("true") ? "1" : "0";
+                break;
+        }
     }
 
     @Override
-    public String toC(FunctionTable table) { return value; }
+    public String toC() { return value; }
 }

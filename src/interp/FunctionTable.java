@@ -37,13 +37,6 @@ public class FunctionTable {
 		table = new HashMap<String,FunctionNode>();
 	}
 
-	public void resolveType(Data data) {
-		if (!data.isFromSignature()) return;
-		FunctionNode fn = table.get(data.getFuncSignature());
-		resolveType(fn.getData());
-		data.setData(fn.getData());
-	}
-
 	public void add(String signature, FunctionNode node) {
 		table.put(signature, node);
 	}

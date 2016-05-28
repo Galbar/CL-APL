@@ -8,8 +8,10 @@ end
 
 func main ()
     c = 10
+    write c
     a(c)
     l = int[c]
+    l[0] = 5
     for i in 0:c
         read l[i]
     end
@@ -18,4 +20,5 @@ func main ()
     pfor v in l2
         write v
     end
+    return l[0]
 end

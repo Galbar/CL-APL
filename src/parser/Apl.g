@@ -72,7 +72,7 @@ instruction
         ;
 
 // Assignment
-assign  :    ID eq=EQUAL expr -> ^(ASSIGN[$eq,":="] ID expr)
+assign  :    id_atom eq=EQUAL expr -> ^(ASSIGN[$eq,":="] id_atom expr)
         ;
 
 // if-then-else (else is optional)

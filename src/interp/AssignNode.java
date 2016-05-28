@@ -31,7 +31,7 @@ import java.lang.StringBuilder;
 
 public class AssignNode extends CodeNode {
 
-    public AssignNode(VariableNode var, ExpressionNode expr)
+    public AssignNode(CodeNode var, ExpressionNode expr)
     {
         super(null);
         appendChild(var);
@@ -39,12 +39,11 @@ public class AssignNode extends CodeNode {
     }
 
     @Override
-    public String toC(FunctionTable table) {
+    public String toC() {
         StringBuilder str = new StringBuilder();
-        str.append("var");
-        str.append(getChild(0).toC(table));
+        str.append(getChild(0).toC());
         str.append(" = ");
-        str.append(getChild(1).toC(table));
+        str.append(getChild(1).toC());
         str.append(";\n");
         return str.toString();
     }
