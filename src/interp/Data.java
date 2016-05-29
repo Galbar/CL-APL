@@ -89,6 +89,17 @@ public class Data {
         return dependencies != null;
     }
 
+    private boolean isSelfContained(Data data) {
+        if (data == this) return true;
+        if (dependencies == null) return false;
+        for (Data dep : dependencies) {
+            if (dep.isSelfContained(data)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     public void resolve() {
         if (dependencies == null) return;
         ArrayList<Data> newDeps = null;
@@ -120,6 +131,7 @@ public class Data {
     }
 
     public void addDependency(Data dependecy) {
+        if (isSelfContained(dependecy)) return;
         ArrayList<Data> deps = new ArrayList<Data>();
         if (type != Type.FROM_DEPENDENCIES) {
             deps.add(new Data(this));

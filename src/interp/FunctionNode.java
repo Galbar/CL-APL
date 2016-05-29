@@ -52,6 +52,8 @@ public class FunctionNode extends CodeNode {
         return numParams;
     }
 
+    public String getName() { return name; }
+
     public String getSignature() {
         StringBuilder signatureBuild = new StringBuilder();
         signatureBuild.append(name);

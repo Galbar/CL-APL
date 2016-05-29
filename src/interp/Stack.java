@@ -118,7 +118,7 @@ public class Stack {
         } else {
             if (CurrentAR.get(d).hasDependencies()) {
                 // TODO: TODO IT BETTER
-                System.out.println("Warning: Type of variable `" + name + "` depends on types that haven't been decided yet.");
+                System.err.println("Warning: Type of variable `" + name + "` depends on types that haven't been decided yet.");
             }
             id = d.intValue();
         }
@@ -134,7 +134,7 @@ public class Stack {
                 && CurrentAR.get(d).getSubData().getType() != value.getType() ) ) {
             throw new AplException("Assigning value to an element of an inexistent array with name`" + name + "`.");
         } else if (CurrentAR.get(d).hasDependencies()) {
-            System.out.println("Warning: Type of variable `" + name + "` depends on types that haven't been decided yet.");
+            System.err.println("Warning: Type of variable `" + name + "` depends on types that haven't been decided yet.");
         }
         return d.intValue();
     }

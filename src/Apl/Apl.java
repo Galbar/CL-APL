@@ -118,28 +118,31 @@ public class Apl{
         // Start interpretation (only if execution required)
         if (execute) {
             CodeAnalyzer CA = new CodeAnalyzer(t);
-            if (!CA.parse()) System.out.println("There has been an error when parsing the code.");
-            ArrayList<FunctionNode> table = CA.getFunctionTable();
+            if (!CA.parse()) {
+                System.err.println("There has been an error when parsing the code.");
+            } else {
+                ArrayList<FunctionNode> table = CA.getFunctionTable();
 
-            StringBuilder str = new StringBuilder();
-            str.append("#include <stdio.h>\n");
-            str.append("#include <stdlib.h>\n\n");
-            for (FunctionNode fn : table) {
-                fn.getData().resolve();
-                str.append(fn.getData().typeToString());
-                str.append(" ");
-                str.append(fn.getSignature());
-                str.append(";\n");
-            }
+                StringBuilder str = new StringBuilder();
+                str.append("#include <stdio.h>\n");
+                str.append("#include <stdlib.h>\n\n");
+                for (FunctionNode fn : table) {
+                    fn.getData().resolve();
+                    str.append(fn.getData().typeToString());
+                    str.append(" ");
+                    str.append(fn.getSignature());
+                    str.append(";\n");
+                }
 
-            str.append("\n");
-
-            for (FunctionNode fn : table) {
-                str.append(fn.toC());
                 str.append("\n");
-            }
 
-            System.out.print(str.toString());
+                for (FunctionNode fn : table) {
+                    str.append(fn.toC());
+                    str.append("\n");
+                }
+
+                System.out.print(str.toString());
+            }
         }
     }
 

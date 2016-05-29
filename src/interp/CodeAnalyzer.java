@@ -33,6 +33,7 @@ import java.io.OutputStream;
 import java.io.IOException;
 import java.lang.StringBuilder;
 import java.util.ArrayList;
+import java.util.HashSet;
 
 import parser.AplLexer;
 
@@ -41,11 +42,14 @@ public class CodeAnalyzer {
     private Stack stack;
     private int linenumber;
     private ArrayList<FunctionNode> funcTable;
+    private HashSet<String> funcNames;
+    private FunctionNode currentFunction;
 
     public CodeAnalyzer(AplTree root) {
         this.root = root;
         stack = new Stack();
         funcTable = new ArrayList<FunctionNode>();
+        funcNames = new HashSet<String>();
     }
 
     public boolean parse() {
@@ -61,14 +65,21 @@ public class CodeAnalyzer {
         setLineNumber(mainNode);
         stack.pushActivationRecord("main", lineNumber());
 
-        boolean ret = parseFunction(mainNode);
+        boolean ret = true;
+        try {
+            parseFunction(mainNode);
+        } catch (AplException e) {
+            print("Line " + Integer.toString(lineNumber()) + ": " + e.getMessage());
+            ret = false;
+        }
         stack.popActivationRecord();
-        
+
         if (!ret) print(stack.getStackTrace(lineNumber()));
         return ret;
     }
 
-    public boolean parseFunction(AplTree node) {
+    public FunctionNode parseFunction(AplTree node) throws AplException {
+        FunctionNode prevFuncNode = currentFunction;
         int numParams = node.getChild(1).getChildCount();
         String name = node.getChild(0).getText();
         if (name.equals("main")) {
@@ -82,25 +93,22 @@ public class CodeAnalyzer {
 
         FunctionNode function = new FunctionNode(name, numParams, stack.getCurrentAR());
         funcTable.add(function);
+        funcNames.add(function.getName());
+
+        currentFunction = function;
 
         AplTree listInstr = node.getChild(2);
 
-        try {
-            for (int i = 0; i < listInstr.getChildCount(); ++i) {
-                AplTree instr = listInstr.getChild(i);
-                CodeNode instrNode = parseInstruction(instr, function);
-                if (instrNode != null) {
-                    function.appendChild(instrNode);
-                }
+        for (int i = 0; i < listInstr.getChildCount(); ++i) {
+            AplTree instr = listInstr.getChild(i);
+            CodeNode instrNode = parseInstruction(instr, function);
+            if (instrNode != null) {
+                function.appendChild(instrNode);
             }
-        } catch (AplException e) {
-            print(e.getMessage());
-            return false;
         }
 
-        // Obtain type
-
-        return true;
+        currentFunction = prevFuncNode;
+        return function;
     }
 
     protected AplTree findFunction(String name) throws AplException {
@@ -243,6 +251,7 @@ public class CodeAnalyzer {
                 break;
             case AplLexer.READ:
             case AplLexer.WRITE:
+            case AplLexer.FUNCALL:
                 {
                     ExpressionNode expr = parseExpression(node);
                     expr.setInstruction();
@@ -278,29 +287,6 @@ public class CodeAnalyzer {
                     retval = new ReturnNode(expr);
                 }
                 break;
-            case AplLexer.FUNCALL:
-                {
-                    String funcName = node.getChild(0).getText();
-                    AplTree func = findFunction(funcName);
-                    AplTree params = node.getChild(1);
-
-                    ArrayList<Data> paramData = new ArrayList<Data>();
-                    for (int i = 0; i < params.getChildCount(); ++i) {
-                        ExpressionNode expr = parseExpression(params.getChild(i));
-                        expr.getData().resolve();
-                        paramData.add(expr.getData());
-                    }   
-
-                    stack.pushActivationRecord(funcName, lineNumber());
-                    
-                    params = func.getChild(1);
-                    for (int i = 0; i < params.getChildCount(); ++i) {
-                        stack.defineVariable(params.getChild(i).getChild(0).getText(), paramData.get(i));
-                    }
-
-                    boolean ret = parseFunction(func);
-                    stack.popActivationRecord();
-                }
         }
         return retval;
     }
@@ -393,6 +379,40 @@ public class CodeAnalyzer {
                     expr.appendChild(new ArrayNode(new Data(Data.Type.ARRAY, data), accessExpr));
                     break;
                 }
+            case AplLexer.FUNCALL:
+                {
+                    String funcName = expression.getChild(0).getText();
+                    AplTree func = findFunction(funcName);
+                    AplTree params = expression.getChild(1);
+
+                    if (params.getChildCount() != func.getChild(1).getChildCount()) {
+                        throw new AplException("Calling function `" + funcName + "` with a wrong number of parameters.");
+                    }
+
+                    ArrayList<Data> paramData = new ArrayList<Data>();
+                    ArrayList<ExpressionNode> exprs = new ArrayList<ExpressionNode>();
+                    for (int i = 0; i < params.getChildCount(); ++i) {
+                        ExpressionNode paramExpr = parseExpression(params.getChild(i));
+                        paramData.add(paramExpr.getData());
+                        exprs.add(paramExpr);
+                    }
+
+                    FunctionNode funcNode = currentFunction;
+                    if (!funcNames.contains(funcName)) {
+                        stack.pushActivationRecord(funcName, lineNumber());
+
+                        params = func.getChild(1);
+                        for (int i = 0; i < params.getChildCount(); ++i) {
+                            stack.defineVariable(params.getChild(i).getChild(0).getText(), paramData.get(i));
+                        }
+
+                        funcNode = parseFunction(func);
+                        stack.popActivationRecord();
+                    }
+
+                    expr.appendChild(new FunctionCallNode(funcNode, exprs));
+                }
+                break;
             default:
                 {
                     OperatorNode op = new OperatorNode(expression.getText());
@@ -426,7 +446,7 @@ public class CodeAnalyzer {
 
     public void print(String message) {
         try {
-            System.out.write((message + "\n").getBytes());
+            System.err.write((message + "\n").getBytes());
         }
         catch (IOException e){};
     }
