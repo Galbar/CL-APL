@@ -36,12 +36,26 @@ public class ReadNode extends CodeNode {
     public ReadNode(CodeNode expr) {
         super(null);
         this.expr = expr;
+        appendChild(expr);
+        this.data = new Data(Data.Type.INT);
     }
 
     @Override
-    public String toC() {
+    public String toC() throws AplException {
         StringBuilder str = new StringBuilder();
-        str.append("scanf(\"");
+        if (getNumChilds() == 1) {
+            str.append("scanf(\"");
+        } else {
+            str.append("sscanf(");
+            str.append(getChild(1).toC());
+            str.append(", \"");
+            getChild(1).getData().resolve();
+            if (getChild(1).getData().getType() != Data.Type.ARRAY
+                && getChild(1).getData().getSubData().getType() != Data.Type.CHAR) {
+                throw new AplException("Reading from a variable that is not a string");
+            }
+        }
+        this.expr.getData().resolve();
         switch(this.expr.getData().getType()) {
             case CHAR:
                 str.append("%c");
@@ -60,6 +74,8 @@ public class ReadNode extends CodeNode {
                     str.append("%s");
                 }
                 break;
+            default:
+                throw new AplException("Reading to a variable of undecided type.");
         }
         str.append("\", ");
         switch(this.expr.getData().getType()) {
@@ -70,7 +86,7 @@ public class ReadNode extends CodeNode {
                 str.append("&");
                 str.append(this.expr.toC());
         }
-        str.append(");\n");
+        str.append(")");
         return str.toString();
     }
 }

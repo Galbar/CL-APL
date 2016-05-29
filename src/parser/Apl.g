@@ -48,9 +48,8 @@ paramlist: param (','! param)*
 
 // Parameters with & as prefix are passed by reference
 // Only one node with the name of the parameter is created
-// TODO: Fix ID -> id_atom
-param   :   '&' id=ID -> ^(PREF[$id,$id.text])
-        |   id=ID -> ^(PVALUE[$id,$id.text])
+param   :   '&' id_atom -> ^(PREF id_atom)
+        |   id_atom -> ^(PVALUE id_atom)
         ;
 
 // A list of instructions, all of them gouped in a subtree
@@ -81,13 +80,11 @@ ite_stmt	:	IF^ expr THEN! block_instructions (ELIF! expr THEN! block_instruction
             ;
 
 // for statement
-for_stmt	:	FOR ID IN expr1=expr (':' expr2=expr)? block_instructions END
-                -> ^(FOR ID $expr1 $expr2? block_instructions)
+for_stmt	:	FOR^ id_atom IN! expr ':'! expr block_instructions END!
             ;
 
 // pfor statement
-pfor_stmt	:	PFOR ID IN expr1=expr (':' expr2=expr)? block_instructions END
-                -> ^(PFOR ID $expr1 $expr2? block_instructions)
+pfor_stmt	:	PFOR^ id_atom IN! expr ':'! expr block_instructions END!
             ;
 
 // while statement
@@ -99,11 +96,11 @@ return_stmt	:	RETURN^ expr?
         ;
 
 // Read a variable
-read	:	READ^ id_atom
+read	:	READ^ id_atom (FROM! expr)?
         ;
 
 // Write an expression or a string
-write	:   WRITE^ expr
+write	:   WRITE^ expr (TO! id_atom)?
         ;
 
 // Write an expression or a string
@@ -139,6 +136,8 @@ atom    :   id_atom
         |   STRING
         |   (b=TRUE | b=FALSE)  -> ^(BOOLEAN[$b,$b.text])
         |   funcall
+        |   write
+        |   read
         |   '('! expr ')'!
         ;
 
@@ -184,7 +183,9 @@ FUNC	: 'func' ;
 RETURN	: 'return' ;
 END     : 'end';
 READ	: 'read' ;
+FROM    : 'from' ;
 WRITE	: 'write' ;
+TO	    : 'to' ;
 FREE    : 'free' ;
 TRUE    : 'true' ;
 FALSE   : 'false';

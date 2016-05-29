@@ -38,7 +38,7 @@ public class BlockInstrNode extends CodeNode {
     }
 
     @Override
-    public String toC() {
+    public String toC() throws AplException {
         StringBuilder str = new StringBuilder();
 
         str.append("{\n");

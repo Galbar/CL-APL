@@ -40,10 +40,20 @@ public class ArrayNode extends CodeNode {
     }
 
     @Override
-    public String toC() {
+    public String toC() throws AplException {
         StringBuilder str = new StringBuilder();
+        expr.getData().resolve();
+
         str.append("malloc(");
-        str.append(expr.toC());
+
+        if (expr.getData().getType() != Data.Type.INT) {
+            str.append("(int)(");
+            str.append(expr.toC());
+            str.append(")");
+        } else {
+            str.append(expr.toC());
+        }
+
         str.append(" * sizeof(");
         str.append(data.getSubData().typeToString());
         str.append("))");

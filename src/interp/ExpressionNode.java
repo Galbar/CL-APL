@@ -31,7 +31,7 @@ import java.lang.StringBuilder;
 
 
 public class ExpressionNode extends CodeNode {
-    // TODO: getData que se deduce de los hijos
+    private boolean isInstr = false;
 
     public ExpressionNode()
     {
@@ -45,7 +45,10 @@ public class ExpressionNode extends CodeNode {
             data = getChild(0).getData();
             return data;
         } else {
-            String op = getChild(0).toC();
+            String op = "";
+            try {
+                op = getChild(0).toC();
+            } catch (AplException e) {}
             if (op.equals("==") || op.equals("!=")
                 || op.equals("<=") || op.equals(">=")
                 || op.equals("<") || op.equals(">")
@@ -63,8 +66,12 @@ public class ExpressionNode extends CodeNode {
         }
     }
 
+    public void setInstruction() {
+        this.isInstr = true;
+    }
+
     @Override
-    public String toC() {
+    public String toC() throws AplException {
         StringBuilder str = new StringBuilder();
         switch (getNumChilds()) {
             case 1:
@@ -81,6 +88,9 @@ public class ExpressionNode extends CodeNode {
                 str.append(getChild(0).toC());
                 str.append(" ");
                 str.append(getChild(2).toC());
+        }
+        if (isInstr) {
+            str.append(";\n");
         }
         return str.toString();
     }

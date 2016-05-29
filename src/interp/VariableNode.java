@@ -40,7 +40,7 @@ public class VariableNode extends CodeNode {
     }
 
     @Override
-    public String toC() {
+    public String toC() throws AplException {
         StringBuilder str = new StringBuilder();
         str.append("var");
         str.append((new Integer(varID)).toString());

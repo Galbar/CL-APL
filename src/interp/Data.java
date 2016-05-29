@@ -99,6 +99,7 @@ public class Data {
                 continue;
             }
 
+            dep.resolve();
             if (dep.hasDependencies()) {
                 if (newDeps == null) {
                     newDeps = new ArrayList<Data>();
@@ -128,6 +129,8 @@ public class Data {
         dependencies = deps;
         resolve();
     }
+
+    public ArrayList<Data> getDependencies() { return dependencies; }
 
     public String typeToString() {
         switch(type) {

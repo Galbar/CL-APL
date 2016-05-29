@@ -64,6 +64,11 @@ public class ConstantNode extends CodeNode {
         this.data = data;
     }
 
+    public void setConstant(String value, Data data) {
+        this.value = value;
+        this.data = data;
+    }
+
     @Override
-    public String toC() { return value; }
+    public String toC() throws AplException { return value; }
 }

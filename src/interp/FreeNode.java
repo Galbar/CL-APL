@@ -34,14 +34,19 @@ import java.lang.StringBuilder;
 public class FreeNode extends CodeNode {
     private int varID;
 
-    public FreeNode(int varID) {
+    public FreeNode(int varID, Data data) {
         super(null);
         this.varID = varID;
+        this.data = data;
     }
 
     @Override
-    public String toC() {
+    public String toC() throws AplException {
         StringBuilder str = new StringBuilder();
+        data.resolve();
+        if (data.getType() != Data.Type.ARRAY) {
+            throw new AplException("Cannot free a variable that is not an array.");
+        }
 
         str.append("free(var");
         str.append(Integer.toString(varID));

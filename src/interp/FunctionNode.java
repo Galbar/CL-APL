@@ -53,7 +53,7 @@ public class FunctionNode extends CodeNode {
     }
 
     @Override
-    public String toC() {
+    public String toC() throws AplException {
         StringBuilder str = new StringBuilder();
         data.resolve();
 
@@ -77,6 +77,22 @@ public class FunctionNode extends CodeNode {
             Integer key = new Integer(i);
             Data value = variables.get(i);
             value.resolve();
+            if (value.getType() == Data.Type.FROM_DEPENDENCIES) {
+                StringBuilder error = new StringBuilder();
+                error.append("Type of variable could not be decided. Depends on ");
+                boolean first = true;
+                for (Data d : value.getDependencies()) {
+                    if (first) {
+                        first = false;
+                    } else {
+                        str.append(", ");
+                    }
+                    str.append("`");
+                    str.append(d.typeToString());
+                    str.append("`");
+                }
+                throw new AplException (str.toString());
+            }
             str.append(value.typeToString());
             str.append(" var");
             str.append(key.toString());

@@ -51,5 +51,5 @@ public class OperatorNode extends CodeNode {
     }
 
     @Override
-    public String toC() { return op; }
+    public String toC() throws AplException { return op; }
 }

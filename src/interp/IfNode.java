@@ -38,7 +38,7 @@ public class IfNode extends CodeNode {
     }
 
     @Override
-    public String toC() {
+    public String toC() throws AplException {
         StringBuilder str = new StringBuilder();
 
         str.append("if (");

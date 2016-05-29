@@ -40,7 +40,7 @@ public class ForNode extends CodeNode {
     }
 
     @Override
-    public String toC() {
+    public String toC() throws AplException {
         StringBuilder str = new StringBuilder();
 
         int depth = 0;
@@ -56,17 +56,10 @@ public class ForNode extends CodeNode {
 
         String it, init, size;
         str.append("for (");
-        if (getNumChilds() == 4) {
-            it = getChild(0).toC();
-            init = getChild(1).toC();
-            size = getChild(2).toC();
-        } else {
-            str.append("int ");
-            it = "i" + Integer.toString(depth);
-            init = "0";
-            size = "sizeof(" + getChild(1).toC() + ")/sizeof(" 
-                + getChild(1).getData().getSubData().typeToString() + ")";
-        }
+
+        it = getChild(0).toC();
+        init = getChild(1).toC();
+        size = getChild(2).toC();
 
         str.append(it);
         str.append(" = ");
@@ -78,7 +71,8 @@ public class ForNode extends CodeNode {
         str.append("; ++");
         str.append(it);
         str.append(")\n");
-        str.append(getChild(getNumChilds()-1).toC().replaceAll("\\{it\\}", it));
+
+        str.append(getChild(getNumChilds()-1).toC());
 
         return str.toString();
     }

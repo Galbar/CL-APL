@@ -76,6 +76,6 @@ public abstract class CodeNode {
     }
 
     public Data getData() { return data; }
-    public abstract String toC();
+    public abstract String toC() throws AplException;
 }
 

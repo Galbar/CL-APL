@@ -36,15 +36,29 @@ public class WriteNode extends CodeNode {
     public WriteNode(ExpressionNode expr) {
         super(null);
         this.expr = expr;
+        appendChild(expr);
+        this.data = new Data(Data.Type.INT);
     }
 
     @Override
-    public String toC() {
+    public String toC() throws AplException {
         this.expr.getData().resolve();
 
         StringBuilder str = new StringBuilder();
 
-        str.append("printf(\"");
+        if (getNumChilds() == 1) {
+            str.append("printf(\"");
+        } else {
+            str.append("sprintf(");
+            getChild(1).getData().resolve();
+            if (getChild(1).getData().getType() != Data.Type.ARRAY
+                && getChild(1).getData().getSubData().getType() != Data.Type.CHAR) {
+                throw new AplException("Writing to a variable that is not a string.");
+            }
+            str.append(getChild(1).toC());
+            str.append(", \"%s");
+        }
+
         switch(this.expr.getData().getType()) {
             case VOID:
                 str.append("%s");
@@ -69,7 +83,15 @@ public class WriteNode extends CodeNode {
                 }
                 break;
         }
-        str.append("\\n\", ");
+
+        if (getNumChilds() == 1) {
+            str.append("\\n\", ");
+        } else {
+            str.append("\", ");
+            str.append(getChild(1).toC());
+            str.append(", ");
+        }
+
         switch(this.expr.getData().getType()) {
             case VOID:
                 str.append("\"void\"");
@@ -96,7 +118,7 @@ public class WriteNode extends CodeNode {
                 }
                 break;
         }
-        str.append(");\n");
+        str.append(")");
         return str.toString();
     }
 }

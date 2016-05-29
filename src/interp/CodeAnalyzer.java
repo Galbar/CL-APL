@@ -59,8 +59,6 @@ public class CodeAnalyzer {
 
         setLineNumber(mainNode);
         stack.pushActivationRecord("main", lineNumber());
-        stack.defineVariable("argc", new Data(Data.Type.INT));
-        stack.defineVariable("argv", new Data(Data.Type.ARRAY, new Data(Data.Type.ARRAY, new Data(Data.Type.CHAR))));
 
         boolean ret = parseFunction(mainNode);
         stack.popActivationRecord();
@@ -69,8 +67,19 @@ public class CodeAnalyzer {
     }
 
     public boolean parseFunction(AplTree node) {
-        String signature;
 
+        int numParams = node.getChild(1).getChildCount();
+        String name = node.getChild(0).getText();
+        if (name.equals("main")) {
+            if (numParams >= 1) {
+                stack.defineVariable("argc", new Data(Data.Type.INT));
+            }
+            if (numParams >= 2) {
+                stack.defineVariable("argv", new Data(Data.Type.ARRAY, new Data(Data.Type.ARRAY, new Data(Data.Type.CHAR))));
+            }
+        }
+
+        String signature;
         try {
             signature = getFuncSignature(node);
         } catch (AplException e) {
@@ -78,9 +87,6 @@ public class CodeAnalyzer {
             return false;
         }
 
-        int numParams = node.getChild(1).getChildCount();
-        String name = node.getChild(0).getText();
-        if (name.equals("main")) numParams = 2;
 
         FunctionNode function = new FunctionNode(name, numParams, stack.getCurrentAR());
         funcTable.add(signature, function);
@@ -118,7 +124,6 @@ public class CodeAnalyzer {
 
         AplTree params = func.getChild(1);
         int numParams = params.getChildCount();
-        if (funcName.equals("main")) numParams = 2;
         for (int i = 0; i < numParams; ++i) {
             Data param = stack.getVariable(i);
             if (i != 0) {
@@ -225,32 +230,38 @@ public class CodeAnalyzer {
                     AplTree listInstr = node.getChild(node.getChildCount()-1);
                     BlockInstrNode block = new BlockInstrNode();
 
-                    if (node.getChildCount() == 4) {
-                        ExpressionNode init = parseExpression(node.getChild(1));
-                        ExpressionNode size = parseExpression(node.getChild(2));
-                        String varname = node.getChild(0).getText();
-                        Data data = init.getData();
-                        int varID = stack.defineVariable(varname, data);
-                        retval.appendChild(new VariableNode(varID, stack.getVariable(varID)));
-                        retval.appendChild(init);
-                        retval.appendChild(size);
+                    String varname;
+                    int varID;
+
+                    if (node.getChild(0).getType() == AplLexer.IDARR) {
+                        varname = node.getChild(0).getChild(0).getText();
                     } else {
-                        Data data = stack.getVariable(node.getChild(1).getText());
-                        int varID = stack.defineVariable(node.getChild(0).getText(), data.getSubData());
-                        VariableNode var = new VariableNode(varID, stack.getVariable(varID));
-
-                        int listID = stack.getVariableID(node.getChild(1).getText());
-
-                        retval.appendChild(var);
-                        retval.appendChild(new VariableNode(listID, data));
-
-                        ExpressionNode expr = new ExpressionNode();
-                        ExpressionNode acc_expr = new ExpressionNode();
-                        acc_expr.appendChild(new ConstantNode("{it}", new Data(Data.Type.INT)));
-                        ArrayAccessNode acc = new ArrayAccessNode(listID, data.getSubData(), acc_expr);
-                        expr.appendChild(acc);
-                        block.appendChild(new AssignNode(new VariableNode(varID, stack.getVariable(varID)), expr)); // assign inyected
+                        varname = node.getChild(0).getText();
                     }
+
+                    ExpressionNode init = parseExpression(node.getChild(1));
+                    Data data = init.getData();
+                    ExpressionNode size = parseExpression(node.getChild(2));
+
+                    if (node.getChild(0).getType() == AplLexer.IDARR) {
+                        varID = stack.setArrayElement(varname, data);
+                    } else {
+                        varID = stack.defineVariable(varname, data);
+                    }
+
+                    Data varData = stack.getVariable(varID);
+                    CodeNode var;
+
+                    if (node.getChild(0).getType() == AplLexer.IDARR) {
+                        ExpressionNode delta = parseExpression(node.getChild(0).getChild(1));
+                        var = new ArrayAccessNode(varID, varData.getSubData(), delta);
+                    } else {
+                        var = new VariableNode(varID, varData);
+                    }
+
+                    retval.appendChild(var);
+                    retval.appendChild(init);
+                    retval.appendChild(size);
 
                     for (int i = 0; i < listInstr.getChildCount(); ++i) {
                         AplTree instr = listInstr.getChild(i);
@@ -264,40 +275,11 @@ public class CodeAnalyzer {
                 }
                 break;
             case AplLexer.READ:
-                {
-                    String varname;
-                    int varID;
-
-                    if (node.getChild(0).getType() == AplLexer.IDARR) {
-                        varname = node.getChild(0).getChild(0).getText();
-                    } else {
-                        varname = node.getChild(0).getText();
-                    }
-
-                    try {
-                        varID = stack.getVariableID(varname);
-                    } catch (AplException e) {
-                        print("Warning: variable with name `" + varname + "` not defined before reading. Assuming int.");
-                        varID = stack.defineVariable(varname, new Data(Data.Type.INT));
-                    }
-
-                    Data varData = stack.getVariable(varID);
-                    CodeNode var;
-
-                    if (node.getChild(0).getType() == AplLexer.IDARR) {
-                        ExpressionNode delta = parseExpression(node.getChild(0).getChild(1));
-                        var = new ArrayAccessNode(varID, varData.getSubData(), delta);
-                    } else {
-                        var = new VariableNode(varID, varData);
-                    }
-
-                    retval = new ReadNode(var);
-                }
-                break;
             case AplLexer.WRITE:
                 {
-                    ExpressionNode expr = parseExpression(node.getChild(0));
-                    retval = new WriteNode(expr);
+                    ExpressionNode expr = parseExpression(node);
+                    expr.setInstruction();
+                    retval = expr;
                 }
                 break;
             case AplLexer.FREE:
@@ -316,7 +298,7 @@ public class CodeAnalyzer {
                     } catch (AplException e) {
                         throw new AplException("(Error) Line " + Integer.toString(node.getLine()) + ": Freed array `" + varname + "` is not defined.");
                     }
-                    retval = new FreeNode(varID);
+                    retval = new FreeNode(varID, stack.getVariable(varID));
                 }
                 break;
             case AplLexer.RETURN:
@@ -349,32 +331,88 @@ public class CodeAnalyzer {
                 id = stack.getVariableID(expression.getText());
                 expr.appendChild(new VariableNode(id, stack.getVariable(id)));
                 break;
+            case AplLexer.READ:
+                {
+                    String varname;
+                    int varID;
+
+                    if (expression.getChild(0).getType() == AplLexer.IDARR) {
+                        varname = expression.getChild(0).getChild(0).getText();
+                    } else {
+                        varname = expression.getChild(0).getText();
+                    }
+
+                    try {
+                        varID = stack.getVariableID(varname);
+                    } catch (AplException e) {
+                        if (expression.getChild(0).getType() == AplLexer.IDARR) {
+                            throw new AplException("Reading to an element of a not defined array.");
+                        }
+                        print("Warning: variable with name `" + varname + "` not defined before reading. Assuming int.");
+                        varID = stack.defineVariable(varname, new Data(Data.Type.INT));
+                    }
+
+                    Data varData = stack.getVariable(varID);
+                    CodeNode var;
+
+                    if (expression.getChild(0).getType() == AplLexer.IDARR) {
+                        ExpressionNode delta = parseExpression(expression.getChild(0).getChild(1));
+                        var = new ArrayAccessNode(varID, varData.getSubData(), delta);
+                    } else {
+                        var = new VariableNode(varID, varData);
+                    }
+
+                    ReadNode retval = new ReadNode(var);
+
+                    // from <string>
+                    if (expression.getChildCount() == 2) {
+                        retval.appendChild(parseExpression(expression.getChild(1)));
+                    }
+
+                    expr.appendChild(retval);
+                }
+                break;
+            case AplLexer.WRITE:
+                {
+                    WriteNode retval = new WriteNode(parseExpression(expression.getChild(0)));
+
+                    // to <string>
+                    if (expression.getChildCount() == 2) {
+                        retval.appendChild(parseExpression(expression.getChild(1)));
+                    }
+                    expr.appendChild(retval);
+                }
+                break;
             case AplLexer.IDARR:
-                Data data;
-                String name = expression.getChild(0).getText();
-                ExpressionNode accessExpr = parseExpression(expression.getChild(1));
-                if (name.equals("int")) {
-                    data = new Data(Data.Type.INT);
-                } else if (name.equals("float")) {
-                    data = new Data(Data.Type.FLOAT);
-                } else if (name.equals("char")) {
-                    data = new Data(Data.Type.CHAR);
-                } else if (name.equals("bool")) {
-                    data = new Data(Data.Type.BOOL);
-                } else {
-                    id = stack.getVariableID(expression.getChild(0).getText());
-                    expr.appendChild(new ArrayAccessNode(id, stack.getVariable(id).getSubData(), accessExpr));
+                {
+                    Data data;
+                    String name = expression.getChild(0).getText();
+                    ExpressionNode accessExpr = parseExpression(expression.getChild(1));
+                    if (name.equals("int")) {
+                        data = new Data(Data.Type.INT);
+                    } else if (name.equals("float")) {
+                        data = new Data(Data.Type.FLOAT);
+                    } else if (name.equals("char")) {
+                        data = new Data(Data.Type.CHAR);
+                    } else if (name.equals("bool")) {
+                        data = new Data(Data.Type.BOOL);
+                    } else {
+                        id = stack.getVariableID(expression.getChild(0).getText());
+                        expr.appendChild(new ArrayAccessNode(id, stack.getVariable(id).getSubData(), accessExpr));
+                        break;
+                    }
+                    expr.appendChild(new ArrayNode(new Data(Data.Type.ARRAY, data), accessExpr));
                     break;
                 }
-                expr.appendChild(new ArrayNode(new Data(Data.Type.ARRAY, data), accessExpr));
-                break;
             default:
-                OperatorNode op = new OperatorNode(expression.getText());
-                expr.appendChild(op);
-                for (int i = 0; i < expression.getChildCount(); ++i) {
-                    AplTree childExpression = expression.getChild(i);
-                    ExpressionNode childExpr = parseExpression(childExpression);
-                    expr.appendChild(childExpr);
+                {
+                    OperatorNode op = new OperatorNode(expression.getText());
+                    expr.appendChild(op);
+                    for (int i = 0; i < expression.getChildCount(); ++i) {
+                        AplTree childExpression = expression.getChild(i);
+                        ExpressionNode childExpr = parseExpression(childExpression);
+                        expr.appendChild(childExpr);
+                    }
                 }
         }
         return expr;

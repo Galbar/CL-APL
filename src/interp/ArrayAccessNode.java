@@ -38,16 +38,27 @@ public class ArrayAccessNode extends CodeNode {
         super(null);
         this.varID = varID;
         this.expr = expr;
+        appendChild(expr);
         this.data = data;
     }
 
     @Override
-    public String toC() {
+    public String toC() throws AplException {
         StringBuilder str = new StringBuilder();
+        expr.getData().resolve();
+
         str.append("var");
         str.append((new Integer(varID)).toString());
         str.append("[");
-        str.append(expr.toC());
+
+        if (expr.getData().getType() != Data.Type.INT) {
+            str.append("(int)(");
+            str.append(expr.toC());
+            str.append(")");
+        } else {
+            str.append(expr.toC());
+        }
+
         str.append("]");
         return str.toString();
     }

@@ -39,7 +39,7 @@ public class AssignNode extends CodeNode {
     }
 
     @Override
-    public String toC() {
+    public String toC() throws AplException {
         StringBuilder str = new StringBuilder();
         str.append(getChild(0).toC());
         str.append(" = ");
