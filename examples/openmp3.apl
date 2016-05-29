@@ -1,10 +1,15 @@
 func main()
-	l = int[4]
-	l[0] = 1
-	l[1] = 2
-	l[2] = 3
-	l[3] = 4
-	for i in l
-		write i
-	end
+    read n
+    l = int[n]
+    for i in 0:n
+        read l[i]
+    end
+
+    mult = 1
+    for i in 0:n
+        mult = mult * l[i]
+    end
+
+    write mult
+    return 0
 end

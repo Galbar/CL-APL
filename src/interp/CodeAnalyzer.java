@@ -243,7 +243,7 @@ public class CodeAnalyzer {
 
                         retval.appendChild(var);
                         retval.appendChild(new VariableNode(listID, data));
-                        
+
                         ExpressionNode expr = new ExpressionNode();
                         ExpressionNode acc_expr = new ExpressionNode();
                         acc_expr.appendChild(new ConstantNode("{it}", new Data(Data.Type.INT)));

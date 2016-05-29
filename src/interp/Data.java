@@ -54,10 +54,10 @@ public class Data {
     private ArrayList<Data> dependencies;
 
     /** Constructor for integers */
-    Data(Type type) { this.type = type; }
+    Data(Type type) { assert type != Type.ARRAY; this.type = type; }
 
     /** Constructor for integers */
-    Data(Type type, Data subData) { this.type = type; this.subData = subData; }
+    Data(Type type, Data subData) { assert subData != null; this.type = type; this.subData = subData; }
 
     /** Constructor for void data */
     Data() {type = Type.VOID; }
@@ -75,14 +75,13 @@ public class Data {
             return;
         }
         type = d.type;
-        subData = new Data();
+        subData = new Data(d.subData);
         if (d.dependencies != null) {
             dependencies = new ArrayList<Data>();
             for (Data dep : d.dependencies) {
                 dependencies.add(new Data(dep));
             }
         }
-        subData.setData(d.subData);
     }
     public Data getSubData() { return subData; }
 
@@ -114,16 +113,19 @@ public class Data {
             setData(newData);
         } else {
             dependencies = newDeps;
+            type = Type.FROM_DEPENDENCIES;
             dependencies.add(newData);
         }
     }
 
     public void addDependency(Data dependecy) {
-        if (dependencies == null) {
-            dependencies = new ArrayList<Data>();
+        ArrayList<Data> deps = new ArrayList<Data>();
+        if (type != Type.FROM_DEPENDENCIES) {
+            deps.add(new Data(this));
+            type = Type.FROM_DEPENDENCIES;
         }
-        type = Type.FROM_DEPENDENCIES;
-        dependencies.add(dependecy);
+        deps.add(dependecy);
+        dependencies = deps;
         resolve();
     }
 
@@ -138,7 +140,7 @@ public class Data {
             case CHAR:
                 return "char";
             case BOOL:
-                return "char";
+                return "int";
             case ARRAY:
                 return subData.typeToString() + "*";
             default:
@@ -149,7 +151,8 @@ public class Data {
     static public Data max(Data d1, Data d2) {
         Data.Type t1 = d1.getType();
         Data.Type t2 = d2.getType();
-        if (t1 == t2) return d1;
+        if (t1 == Data.Type.VOID) return d2;
+        if (t2 == Data.Type.VOID) return d1;
         if (t1 == Data.Type.FLOAT) return d1;
         if (t2 == Data.Type.FLOAT) return d2;
         if (t1 == Data.Type.FROM_DEPENDENCIES || t2 == Data.Type.FROM_DEPENDENCIES) {
@@ -157,6 +160,8 @@ public class Data {
             data.addDependency(d1);
             data.addDependency(d2);
         }
-        return new Data(Data.Type.INT);
+        if (t1 != t2) return new Data(Data.Type.INT);
+        if (t1 == Data.Type.ARRAY && t2 == Data.Type.ARRAY && d1.getSubData().getType() != d2.getSubData().getType()) return new Data(Type.ARRAY, new Data(Type.VOID));
+        return d1;
     }
 }

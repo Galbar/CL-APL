@@ -43,6 +43,7 @@ public class ConstantNode extends CodeNode {
                 break;
             case AplLexer.FLOAT:
                 data = new Data(Data.Type.FLOAT);
+                this.value = this.value + "f";
                 break;
             case AplLexer.CHAR:
                 data = new Data(Data.Type.CHAR);
