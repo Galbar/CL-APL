@@ -52,6 +52,24 @@ public class FunctionNode extends CodeNode {
         return numParams;
     }
 
+    public String getSignature() {
+        StringBuilder signatureBuild = new StringBuilder();
+        signatureBuild.append(name);
+        signatureBuild.append(" ( ");
+
+        for (int i = 0; i < numParams; ++i) {
+            Data param = variables.get(i);
+            if (i != 0) {
+                signatureBuild.append(", ");
+            }
+            signatureBuild.append(param.typeToString());
+        }
+
+        signatureBuild.append(" )");
+
+        return signatureBuild.toString();
+    }
+
     @Override
     public String toC() throws AplException {
         StringBuilder str = new StringBuilder();

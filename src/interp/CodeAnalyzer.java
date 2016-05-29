@@ -32,6 +32,7 @@ import org.antlr.runtime.Token;
 import java.io.OutputStream;
 import java.io.IOException;
 import java.lang.StringBuilder;
+import java.util.ArrayList;
 
 import parser.AplLexer;
 
@@ -39,12 +40,12 @@ public class CodeAnalyzer {
     private AplTree root;
     private Stack stack;
     private int linenumber;
-    private FunctionTable funcTable;
+    private ArrayList<FunctionNode> funcTable;
 
     public CodeAnalyzer(AplTree root) {
         this.root = root;
         stack = new Stack();
-        funcTable = new FunctionTable();
+        funcTable = new ArrayList<FunctionNode>();
     }
 
     public boolean parse() {
@@ -53,7 +54,7 @@ public class CodeAnalyzer {
         try {
             mainNode = findFunction("main");
         } catch (AplException e) {
-            print(e.getMessage());
+            print("Line " + Integer.toString(lineNumber()) + ": " + e.getMessage());
             return false;
         }
 
@@ -62,12 +63,12 @@ public class CodeAnalyzer {
 
         boolean ret = parseFunction(mainNode);
         stack.popActivationRecord();
-
+        
+        if (!ret) print(stack.getStackTrace(lineNumber()));
         return ret;
     }
 
     public boolean parseFunction(AplTree node) {
-
         int numParams = node.getChild(1).getChildCount();
         String name = node.getChild(0).getText();
         if (name.equals("main")) {
@@ -79,17 +80,8 @@ public class CodeAnalyzer {
             }
         }
 
-        String signature;
-        try {
-            signature = getFuncSignature(node);
-        } catch (AplException e) {
-            print(e.getMessage());
-            return false;
-        }
-
-
         FunctionNode function = new FunctionNode(name, numParams, stack.getCurrentAR());
-        funcTable.add(signature, function);
+        funcTable.add(function);
 
         AplTree listInstr = node.getChild(2);
 
@@ -111,32 +103,6 @@ public class CodeAnalyzer {
         return true;
     }
 
-    protected String getFuncSignature(AplTree func) throws AplException {
-        if (func.getType() != AplLexer.FUNC) {
-            print("Node isn't a function root node. Can't get function signature from it");
-            return "";
-        }
-
-        String funcName = func.getChild(0).getText();
-        StringBuilder signatureBuild = new StringBuilder();
-        signatureBuild.append(funcName);
-        signatureBuild.append(" ( ");
-
-        AplTree params = func.getChild(1);
-        int numParams = params.getChildCount();
-        for (int i = 0; i < numParams; ++i) {
-            Data param = stack.getVariable(i);
-            if (i != 0) {
-                signatureBuild.append(", ");
-            }
-            signatureBuild.append(param.typeToString());
-        }
-
-        signatureBuild.append(" )");
-
-        return signatureBuild.toString();
-    }
-
     protected AplTree findFunction(String name) throws AplException {
         for (int i = 0; i < root.getChildCount(); ++i) {
             if (root.getChild(i).getChild(0).getText().equals(name)) return root.getChild(i);
@@ -146,6 +112,7 @@ public class CodeAnalyzer {
 
     protected CodeNode parseInstruction(AplTree node, FunctionNode function) throws AplException {
         CodeNode retval = null;
+        setLineNumber(node);
         switch(node.getType()) {
             case AplLexer.ASSIGN:
                 {
@@ -312,6 +279,28 @@ public class CodeAnalyzer {
                 }
                 break;
             case AplLexer.FUNCALL:
+                {
+                    String funcName = node.getChild(0).getText();
+                    AplTree func = findFunction(funcName);
+                    AplTree params = node.getChild(1);
+
+                    ArrayList<Data> paramData = new ArrayList<Data>();
+                    for (int i = 0; i < params.getChildCount(); ++i) {
+                        ExpressionNode expr = parseExpression(params.getChild(i));
+                        expr.getData().resolve();
+                        paramData.add(expr.getData());
+                    }   
+
+                    stack.pushActivationRecord(funcName, lineNumber());
+                    
+                    params = func.getChild(1);
+                    for (int i = 0; i < params.getChildCount(); ++i) {
+                        stack.defineVariable(params.getChild(i).getChild(0).getText(), paramData.get(i));
+                    }
+
+                    boolean ret = parseFunction(func);
+                    stack.popActivationRecord();
+                }
         }
         return retval;
     }
@@ -442,7 +431,7 @@ public class CodeAnalyzer {
         catch (IOException e){};
     }
 
-    public FunctionTable getFunctionTable() { return funcTable; }
+    public ArrayList<FunctionNode> getFunctionTable() { return funcTable; }
 
     Stack getContext() {
         return stack;

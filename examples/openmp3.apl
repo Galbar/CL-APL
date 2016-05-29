@@ -1,11 +1,5 @@
-func append(&arr, val, &size)
+func append(arr, val, size)
     size = size + 1
-    if len(arr) < size then
-        newarr = int[2 * len(arr)]
-        copy(arr, newarr)
-        free arr
-        arr = newarr
-    end
     arr[size] = val
     return
 end
@@ -19,6 +13,7 @@ func main(argc, argv)
     end
 
     str = char[20]
+    append(l, 1, 1)
 
     write "Result: " to str
     write mult to str

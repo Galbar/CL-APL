@@ -36,7 +36,7 @@ import org.antlr.stringtemplate.*;
 import org.apache.commons.cli.*; // Command Language Interface
 import java.io.*;
 import java.lang.StringBuilder;
-import java.util.Set;
+import java.util.ArrayList;
 
 // Parser and Interpreter
 import parser.*;
@@ -119,24 +119,22 @@ public class Apl{
         if (execute) {
             CodeAnalyzer CA = new CodeAnalyzer(t);
             if (!CA.parse()) System.out.println("There has been an error when parsing the code.");
-            FunctionTable table = CA.getFunctionTable();
-            Set<String> signatures = table.getSignatures();
+            ArrayList<FunctionNode> table = CA.getFunctionTable();
+
             StringBuilder str = new StringBuilder();
             str.append("#include <stdio.h>\n");
             str.append("#include <stdlib.h>\n\n");
-            for (String sig : signatures) {
-                FunctionNode fn = table.get(sig);
+            for (FunctionNode fn : table) {
                 fn.getData().resolve();
                 str.append(fn.getData().typeToString());
                 str.append(" ");
-                str.append(sig);
+                str.append(fn.getSignature());
                 str.append(";\n");
             }
 
             str.append("\n");
 
-            for (String sig : signatures) {
-                FunctionNode fn = table.get(sig);
+            for (FunctionNode fn : table) {
                 str.append(fn.toC());
                 str.append("\n");
             }
