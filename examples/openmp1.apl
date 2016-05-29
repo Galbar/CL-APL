@@ -9,16 +9,40 @@ end
 func main ()
     c = 10
     write c
+
     a(c)
+
     l = int[c]
     l[0] = 5
+
     for i in 0:c
         read l[i]
     end
-    f = 1
+
+    for v in l
+        write v
+    end
+
     l2 = l
+
     pfor v in l2
         write v
     end
-    return l[0]
+
+    c = l[0]
+
+    while c > 0 do
+        c = c - 1
+    end
+
+    if c == 0 then
+        write "first case"
+    elif c == 1 then
+        write "noone"
+    else
+        write "second case"
+    end
+
+    free l
+    return c
 end

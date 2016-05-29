@@ -69,14 +69,15 @@ instruction
         |   funcall         // Call to a procedure (no result produced)
         |	read            // Read a variable
         | 	write           // Write a string or an expression
+        |   free            // Free a malloc'd array
         ;
 
 // Assignment
-assign  :    id_atom eq=EQUAL expr -> ^(ASSIGN[$eq,":="] id_atom expr)
+assign  :    id_atom eq=ASSEQ expr -> ^(ASSIGN[$eq,":="] id_atom expr)
         ;
 
 // if-then-else (else is optional)
-ite_stmt	:	IF^ expr THEN! block_instructions (ELSE! block_instructions)? END!
+ite_stmt	:	IF^ expr THEN! block_instructions (ELIF! expr THEN! block_instructions)* (ELSE! block_instructions)? END!
             ;
 
 // for statement
@@ -103,6 +104,10 @@ read	:	READ^ id_atom
 
 // Write an expression or a string
 write	:   WRITE^ expr
+        ;
+
+// Write an expression or a string
+free   :   FREE^ id_atom
         ;
 
 // Grammar for expressions with boolean, relational and aritmetic operators
@@ -151,7 +156,8 @@ expr_list:  expr (','! expr)*
         ;
 
 // Basic tokens
-EQUAL	: '=' ;
+ASSEQ   : '=' ;
+EQUAL	: '==' ;
 NOT_EQUAL: '!=' ;
 LT	    : '<' ;
 LE	    : '<=';
@@ -166,6 +172,7 @@ NOT	    : 'not';
 AND	    : 'and' ;
 OR	    : 'or' ;	
 IF  	: 'if' ;
+ELIF    : 'elif' ;
 THEN	: 'then' ;
 ELSE	: 'else' ;
 FOR	    : 'for' ;
@@ -178,6 +185,7 @@ RETURN	: 'return' ;
 END     : 'end';
 READ	: 'read' ;
 WRITE	: 'write' ;
+FREE    : 'free' ;
 TRUE    : 'true' ;
 FALSE   : 'false';
 ID  	:	('a'..'z'|'A'..'Z'|'_') ('a'..'z'|'A'..'Z'|'0'..'9'|'_')* ;

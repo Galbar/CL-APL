@@ -57,6 +57,12 @@ public class ConstantNode extends CodeNode {
         }
     }
 
+    public ConstantNode(String value, Data data) {
+        super(null);
+        this.value = value;
+        this.data = data;
+    }
+
     @Override
     public String toC() { return value; }
 }

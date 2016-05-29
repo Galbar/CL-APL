@@ -79,11 +79,11 @@ exec:
 	chmod a+x $(EXEC)
 
 run:
-	bin/Apl -ast AST.txt -dot examples/openmp1.apl
+	bin/Apl -ast AST.txt -dot examples/openmp3.apl
 
 dot: run
 	dot -T pdf -o out.pdf AST.txt
-	evince out.pdf
+	okular out.pdf
 
 clean:
 	rm -rf $(PARSER)/*.java $(PARSER)/*.tokens 

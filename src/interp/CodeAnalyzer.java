@@ -99,7 +99,6 @@ public class CodeAnalyzer {
             print(e.getMessage());
             return false;
         }
-        function.appendChild(new FreeNode());
 
         // Obtain type
 
@@ -176,12 +175,93 @@ public class CodeAnalyzer {
                 }
                 break;
             case AplLexer.IF:
+                {
+                    retval = new IfNode();
+
+                    for (int k = 0; k < node.getChildCount(); ++k) {
+                        if (node.getChild(k).getType() == AplLexer.LIST_INSTR) {
+                            AplTree listInstr = node.getChild(k);
+                            BlockInstrNode block = new BlockInstrNode();
+
+                            for (int i = 0; i < listInstr.getChildCount(); ++i) {
+                                AplTree instr = listInstr.getChild(i);
+                                CodeNode instrNode = parseInstruction(instr, function);
+                                if (instrNode != null) {
+                                    block.appendChild(instrNode);
+                                }
+                            }
+
+                            retval.appendChild(block);
+                        } else {
+                            ExpressionNode expr = parseExpression(node.getChild(k));
+
+                            retval.appendChild(expr);
+                        }
+                    }
+                }
                 break;
             case AplLexer.WHILE:
-                break;
-            case AplLexer.FOR:
+                {
+                    ExpressionNode expr = parseExpression(node.getChild(0));
+
+                    AplTree listInstr = node.getChild(1);
+                    BlockInstrNode block = new BlockInstrNode();
+
+                    for (int i = 0; i < listInstr.getChildCount(); ++i) {
+                        AplTree instr = listInstr.getChild(i);
+                        CodeNode instrNode = parseInstruction(instr, function);
+                        if (instrNode != null) {
+                            block.appendChild(instrNode);
+                        }
+                    }
+
+                    retval = new WhileNode(expr, block);
+                }
                 break;
             case AplLexer.PFOR:
+            case AplLexer.FOR:
+                {
+                    retval = new ForNode(node.getType());
+                    AplTree listInstr = node.getChild(node.getChildCount()-1);
+                    BlockInstrNode block = new BlockInstrNode();
+
+                    if (node.getChildCount() == 4) {
+                        ExpressionNode init = parseExpression(node.getChild(1));
+                        ExpressionNode size = parseExpression(node.getChild(2));
+                        String varname = node.getChild(0).getText();
+                        Data data = init.getData();
+                        int varID = stack.defineVariable(varname, data);
+                        retval.appendChild(new VariableNode(varID, stack.getVariable(varID)));
+                        retval.appendChild(init);
+                        retval.appendChild(size);
+                    } else {
+                        Data data = stack.getVariable(node.getChild(1).getText());
+                        int varID = stack.defineVariable(node.getChild(0).getText(), data.getSubData());
+                        VariableNode var = new VariableNode(varID, stack.getVariable(varID));
+
+                        int listID = stack.getVariableID(node.getChild(1).getText());
+
+                        retval.appendChild(var);
+                        retval.appendChild(new VariableNode(listID, data));
+                        
+                        ExpressionNode expr = new ExpressionNode();
+                        ExpressionNode acc_expr = new ExpressionNode();
+                        acc_expr.appendChild(new ConstantNode("{it}", new Data(Data.Type.INT)));
+                        ArrayAccessNode acc = new ArrayAccessNode(listID, data.getSubData(), acc_expr);
+                        expr.appendChild(acc);
+                        block.appendChild(new AssignNode(new VariableNode(varID, stack.getVariable(varID)), expr)); // assign inyected
+                    }
+
+                    for (int i = 0; i < listInstr.getChildCount(); ++i) {
+                        AplTree instr = listInstr.getChild(i);
+                        CodeNode instrNode = parseInstruction(instr, function);
+                        if (instrNode != null) {
+                            block.appendChild(instrNode);
+                        }
+                    }
+
+                    retval.appendChild(block);
+                }
                 break;
             case AplLexer.READ:
                 {
@@ -220,6 +300,25 @@ public class CodeAnalyzer {
                     retval = new WriteNode(expr);
                 }
                 break;
+            case AplLexer.FREE:
+                {
+                    String varname;
+                    int varID;
+
+                    if (node.getChild(0).getType() == AplLexer.IDARR) {
+                        throw new AplException("(Error) Line " + Integer.toString(node.getLine()) + ": Freed element must be an array.");
+                    } else {
+                        varname = node.getChild(0).getText();
+                    }
+
+                    try {
+                        varID = stack.getVariableID(varname);
+                    } catch (AplException e) {
+                        throw new AplException("(Error) Line " + Integer.toString(node.getLine()) + ": Freed array `" + varname + "` is not defined.");
+                    }
+                    retval = new FreeNode(varID);
+                }
+                break;
             case AplLexer.RETURN:
                 {
                     ExpressionNode expr = null;
@@ -228,7 +327,6 @@ public class CodeAnalyzer {
                         function.getData().addDependency(expr.getData());
                     }
                     retval = new ReturnNode(expr);
-                    function.appendChild(new FreeNode());
                 }
                 break;
             case AplLexer.FUNCALL:

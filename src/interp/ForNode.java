@@ -31,23 +31,55 @@ import parser.*;
 import java.util.ArrayList;
 import java.lang.StringBuilder;
 
-public class FreeNode extends CodeNode {
-    private int varID;
+public class ForNode extends CodeNode {
+    int type;
 
-    public FreeNode(int varID) {
+    public ForNode(int type) {
         super(null);
-        this.varID = varID;
+        this.type = type;
     }
 
     @Override
     public String toC() {
         StringBuilder str = new StringBuilder();
 
-        str.append("free(var");
-        str.append(Integer.toString(varID));
-        str.append(");\n");
+        int depth = 0;
+        CodeNode curr = this;
+        while (curr.getParent() != null) {
+            curr = curr.getParent();
+            ++depth;
+        }
+
+        if (type == AplLexer.PFOR) {
+            str.append("#pragma parallel HIHI");
+        }
+
+        String it, init, size;
+        str.append("for (");
+        if (getNumChilds() == 4) {
+            it = getChild(0).toC();
+            init = getChild(1).toC();
+            size = getChild(2).toC();
+        } else {
+            str.append("int ");
+            it = "i" + Integer.toString(depth);
+            init = "0";
+            size = "sizeof(" + getChild(1).toC() + ")/sizeof(" 
+                + getChild(1).getData().getSubData().typeToString() + ")";
+        }
+
+        str.append(it);
+        str.append(" = ");
+        str.append(init);
+        str.append("; ");
+        str.append(it);
+        str.append(" < ");
+        str.append(size);
+        str.append("; ++");
+        str.append(it);
+        str.append(")\n");
+        str.append(getChild(getNumChilds()-1).toC().replaceAll("\\{it\\}", it));
 
         return str.toString();
     }
 }
-

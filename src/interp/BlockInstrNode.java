@@ -31,23 +31,22 @@ import parser.*;
 import java.util.ArrayList;
 import java.lang.StringBuilder;
 
-public class FreeNode extends CodeNode {
-    private int varID;
+public class BlockInstrNode extends CodeNode {
 
-    public FreeNode(int varID) {
+    public BlockInstrNode() {
         super(null);
-        this.varID = varID;
     }
 
     @Override
     public String toC() {
         StringBuilder str = new StringBuilder();
 
-        str.append("free(var");
-        str.append(Integer.toString(varID));
-        str.append(");\n");
+        str.append("{\n");
+        for (int i = 0; i < getNumChilds(); ++i) {
+            str.append(getChild(i).toC());
+        }
+        str.append("}\n");
 
         return str.toString();
     }
 }
-

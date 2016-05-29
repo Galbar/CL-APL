@@ -31,23 +31,23 @@ import parser.*;
 import java.util.ArrayList;
 import java.lang.StringBuilder;
 
-public class FreeNode extends CodeNode {
-    private int varID;
+public class WhileNode extends CodeNode {
 
-    public FreeNode(int varID) {
+    public WhileNode(ExpressionNode expr, BlockInstrNode block) {
         super(null);
-        this.varID = varID;
+        appendChild(expr);
+        appendChild(block);
     }
 
     @Override
     public String toC() {
         StringBuilder str = new StringBuilder();
 
-        str.append("free(var");
-        str.append(Integer.toString(varID));
-        str.append(");\n");
+        str.append("while (");
+        str.append(getChild(0).toC());
+        str.append(")\n");
+        str.append(getChild(1).toC());
 
         return str.toString();
     }
 }
-
