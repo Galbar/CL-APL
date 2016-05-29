@@ -67,6 +67,7 @@ instruction
         |	read            // Read a variable
         | 	write           // Write a string or an expression
         |   free            // Free a malloc'd array
+        |   parallel        // Declare a parallel zone
         ;
 
 // Assignment
@@ -101,8 +102,12 @@ read	:	READ^ id_atom (FROM! expr)?
 write	:   WRITE^ expr (TO! id_atom)?
         ;
 
-// Write an expression or a string
-free   :   FREE^ id_atom
+// Free allocated memory
+free    :   FREE^ id_atom
+        ;
+
+// Declare a parallel zone
+parallel:   PARALLEL^ SHARED! params PRIVATE! params block_instructions END!
         ;
 
 // Grammar for expressions with boolean, relational and aritmetic operators
@@ -185,6 +190,9 @@ FROM    : 'from' ;
 WRITE	: 'write' ;
 TO	    : 'to' ;
 FREE    : 'free' ;
+PARALLEL: 'parallel' ;
+SHARED  : 'shared' ;
+PRIVATE : 'private' ;
 TRUE    : 'true' ;
 FALSE   : 'false';
 ID  	:	('a'..'z'|'A'..'Z'|'_') ('a'..'z'|'A'..'Z'|'0'..'9'|'_')* ;

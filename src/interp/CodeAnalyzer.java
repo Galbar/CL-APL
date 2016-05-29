@@ -42,14 +42,12 @@ public class CodeAnalyzer {
     private Stack stack;
     private int linenumber;
     private ArrayList<FunctionNode> funcTable;
-    private HashSet<String> funcNames;
     private FunctionNode currentFunction;
 
     public CodeAnalyzer(AplTree root) {
         this.root = root;
         stack = new Stack();
         funcTable = new ArrayList<FunctionNode>();
-        funcNames = new HashSet<String>();
     }
 
     public boolean parse() {
@@ -93,7 +91,6 @@ public class CodeAnalyzer {
 
         FunctionNode function = new FunctionNode(name, numParams, stack.getCurrentAR());
         funcTable.add(function);
-        funcNames.add(function.getName());
 
         currentFunction = function;
 
@@ -116,6 +113,13 @@ public class CodeAnalyzer {
             if (root.getChild(i).getChild(0).getText().equals(name)) return root.getChild(i);
         }
         throw new AplException("Function " + name + " not defined.");
+    }
+
+    protected boolean inParallel(AplTree node) {
+        while (node.getParent().getType() != AplLexer.FUNC && node.getParent().getType() != AplLexer.PARALLEL) {
+            node = node.getParent();
+        }
+        return node.getParent().getType() == AplLexer.PARALLEL;
     }
 
     protected CodeNode parseInstruction(AplTree node, FunctionNode function) throws AplException {
@@ -201,6 +205,7 @@ public class CodeAnalyzer {
             case AplLexer.PFOR:
             case AplLexer.FOR:
                 {
+                    if (!inParallel() && node.getType() == AplLexer.PFOR) throw new AplException("It is prohibited to declare a parallel for outisde of a parallel block.");
                     retval = new ForNode(node.getType());
                     AplTree listInstr = node.getChild(node.getChildCount()-1);
                     BlockInstrNode block = new BlockInstrNode();
@@ -275,6 +280,43 @@ public class CodeAnalyzer {
                         throw new AplException("(Error) Line " + Integer.toString(node.getLine()) + ": Freed array `" + varname + "` is not defined.");
                     }
                     retval = new FreeNode(varID, stack.getVariable(varID));
+                }
+                break;
+            case AplLexer.PARALLEL:
+                {
+                    if (inParallel()) throw new AplException("It is prohibited to declare a parallel block inside another parallel block.");
+
+                    AplTree sharedParams = node.getChild(0);
+                    for (int i = 0; i < sharedParams.getChildCount(); ++i) {
+                        stack.setShared(stack.getVariableID(sharedParams.getChild(i).getText()), new Boolean(true));
+                        sharedList.appendChild(new ConstantNode(sharedParams.getChild(i).getText(), new Data(Data.Type.VOID)));
+                    }
+
+                    AplTree privateParams = node.getChild(1);
+                    for (int i = 0; i < privateParams.getChildCount(); ++i) {
+                        stack.setShared(stack.getVariableID(privateParams.getChild(i).getText()), new Boolean(true));
+                    }
+
+                    AplTree listInstr = node.getChild(2);
+                    BlockInstrNode block = new BlockInstrNode();
+
+                    for (int i = 0; i < listInstr.getChildCount(); ++i) {
+                        AplTree instr = listInstr.getChild(i);
+                        CodeNode instrNode = parseInstruction(instr, function);
+                        if (instrNode != null) {
+                            block.appendChild(instrNode);
+                        }
+                    }
+
+                    for (int i = 0; i < sharedParams.getChildCount(); ++i) {
+                        stack.setShared(stack.getVariableID(sharedParams.getChild(i).getText()), new Boolean(false));
+                    }
+
+                    for (int i = 0; i < privateParams.getChildCount(); ++i) {
+                        stack.setShared(stack.getVariableID(privateParams.getChild(i).getText()), new Boolean(false));
+                    }
+
+                    retval = new ParallelNode(shared, priv, block);
                 }
                 break;
             case AplLexer.RETURN:
@@ -393,12 +435,25 @@ public class CodeAnalyzer {
                     ArrayList<ExpressionNode> exprs = new ArrayList<ExpressionNode>();
                     for (int i = 0; i < params.getChildCount(); ++i) {
                         ExpressionNode paramExpr = parseExpression(params.getChild(i));
+                        paramExpr.getData().resolve();
                         paramData.add(paramExpr.getData());
                         exprs.add(paramExpr);
                     }
 
                     FunctionNode funcNode = currentFunction;
-                    if (!funcNames.contains(funcName)) {
+                    boolean found = false;
+                    FunctionNode temp = new FunctionNode(funcName, paramData.size(), paramData);
+                    String signature = temp.getSignature();
+
+                    for (FunctionNode fn : funcTable) {
+                        if (fn.getSignature().equals(signature)) {
+                            funcNode = fn;
+                            found = true;
+                            break;
+                        }
+                    }
+
+                    if (!found) {
                         stack.pushActivationRecord(funcName, lineNumber());
 
                         params = func.getChild(1);

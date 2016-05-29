@@ -51,7 +51,7 @@ public class ForNode extends CodeNode {
         }
 
         if (type == AplLexer.PFOR) {
-            str.append("#pragma parallel HIHI");
+            str.append("#pragma omp for\n");
         }
 
         String it, init, size;

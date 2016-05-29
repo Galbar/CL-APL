@@ -1,5 +1,6 @@
 func fib(x)
     if x < 2 then return x end
+    if false then return fib('a') end
     return fib(x-1) + fib(x-2)
 end
 

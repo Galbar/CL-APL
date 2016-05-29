@@ -43,12 +43,16 @@ public class Stack {
 
     /** Stack of activation records */
     private LinkedList<ArrayList<Data>> StackAR;
+    private LinkedList<ArrayList<Boolean>> StackARShared;
+    private LinkedList<ArrayList<Boolean>> StackARPrivate;
 
     /** Stack of symbol tables */
     private LinkedList<HashMap<String,Integer>> StackST;
 
     /** Reference to the current activation record */
     private ArrayList<Data> CurrentAR = null;
+    private ArrayList<Boolean> CurrentARShared = null;
+    private ArrayList<Boolean> CurrentARPrivate = null;
 
     /** Mapping of variable's new names **/
     private HashMap<String,Integer> SymbolTable = null;
@@ -72,8 +76,12 @@ public class Stack {
     /** Constructor of the memory */
     public Stack() {
         StackAR = new LinkedList<ArrayList<Data>>();
-        StackST = new LinkedList<HashMap<String,Integer>>();
+        StackARShared = new LinkedList<ArrayList<Boolean>>();
+        StackARPrivate = new LinkedList<ArrayList<Boolean>>();
+        StackST = new LinkedList<HashMap<String,Integer>>(); 
         CurrentAR = null;
+        CurrentARShared = null;
+        CurrentARPrivate = null;
         SymbolTable = null;
         StackTrace = new LinkedList<StackTraceItem>();
     }
@@ -81,8 +89,12 @@ public class Stack {
     /** Creates a new activation record on the top of the stack */
     public void pushActivationRecord(String name, int line) {
         CurrentAR = new ArrayList<Data>();
+        CurrentARShared = new ArrayList<Boolean>();
+        CurrentARPrivate = new ArrayList<Boolean>();
         SymbolTable = new HashMap<String,Integer>();
         StackAR.addLast (CurrentAR);
+        StackARShared.addLast(CurrentARShared);
+        StackARPrivate.addLast(CurrentARPrivate);
         StackST.addLast (SymbolTable);
         StackTrace.addLast (new StackTraceItem(name, line));
     }
@@ -90,9 +102,15 @@ public class Stack {
     /** Destroys the current activation record */
     public void popActivationRecord() {
         StackAR.removeLast();
+        StackARShared.removeLast();
+        StackARPrivate.removeLast();
         StackST.removeLast();
         if (StackAR.isEmpty()) CurrentAR = null;
         else CurrentAR = StackAR.getLast();
+        if (StackARShared.isEmpty()) CurrentARShared = null;
+        else CurrentARShared = StackARShared.getLast();
+        if (StackARPrivate.isEmpty()) CurrentARPrivate = null;
+        else CurrentARPrivate = StackARPrivate.getLast();
         if (StackST.isEmpty()) SymbolTable = null;
         else SymbolTable = StackST.getLast();
         StackTrace.removeLast();
@@ -104,7 +122,7 @@ public class Stack {
      * @param name The name of the variable
      * @param value The value of the variable
      */
-    public int defineVariable(String name, Data value) {
+    public int defineVariable(String name, Data value, Boolean shared, Boolean priv) {
         Integer d = SymbolTable.get(name);
         int id;
 
@@ -115,6 +133,8 @@ public class Stack {
             id = CurrentAR.size();
             SymbolTable.put(name, id); // New definition
             CurrentAR.add(value);
+            CurrentARShared.add(shared);
+            CurrentARPrivate.add(priv);
         } else {
             if (CurrentAR.get(d).hasDependencies()) {
                 // TODO: TODO IT BETTER
@@ -124,6 +144,16 @@ public class Stack {
         }
 
         return id;
+    }
+
+        /** Defines the value of a variable. If the variable does not
+     * exist, it is created. If it exists, the value and type of
+     * the variable are re-defined.
+     * @param name The name of the variable
+     * @param value The value of the variable
+     */
+    public int defineVariable(String name, Data value) {
+        return defineVariable(name, value, new Boolean(false), new Boolean(false));
     }
 
     public int setArrayElement(String name, Data value) throws AplException {
@@ -172,7 +202,19 @@ public class Stack {
         return id.intValue();
     }
 
+    public void setShared(int id, Boolean value) {
+        assert id >= 0 && id < CurrentARShared.size();
+        CurrentARShared.set(id, value);
+    }
+
+    public void setPrivate(int id, Boolean value) {
+        assert id >= 0 && id < CurrentARPrivate.size();
+        CurrentARPrivate.set(id, value);
+    }
+
     public ArrayList<Data> getCurrentAR() { return CurrentAR; }
+    public ArrayList<Boolean> getCurrentAR() { return CurrentARShared; }
+    public ArrayList<Boolean> getCurrentAR() { return CurrentARPrivate; }
 
     /**
      * Generates a string with the contents of the stack trace.
