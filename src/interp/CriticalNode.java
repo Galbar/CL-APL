@@ -27,55 +27,22 @@
 
 package interp;
 
-import parser.*;
-import java.util.ArrayList;
 import java.lang.StringBuilder;
 
-public class ForNode extends CodeNode {
-    int type;
+public class CriticalNode extends CodeNode {
 
-    public ForNode(int type) {
+    public CriticalNode(CodeNode region)
+    {
         super(null);
-        this.type = type;
+        appendChild(region);
     }
 
     @Override
     public String toC() throws AplException {
         StringBuilder str = new StringBuilder();
-
-        int depth = 0;
-        CodeNode curr = this;
-        while (curr.getParent() != null) {
-            curr = curr.getParent();
-            ++depth;
-        }
-
-        if (type == AplLexer.PFOR) {
-            str.append("#pragma omp for ");
-            str.append(getChild(3).toC());
-            str.append("\n");
-        }
-
-        String it, init, size;
-        str.append("for (");
-
-        it = getChild(0).toC();
-        init = getChild(1).toC();
-        size = getChild(2).toC();
-
-        str.append(it);
-        str.append(" = ");
-        str.append(init);
-        str.append("; ");
-        str.append(it);
-        str.append(" < ");
-        str.append(size);
-        str.append("; ++");
-        str.append(it);
-        str.append(")\n");
-
-        str.append(getChild(4).toC());
-
+        str.append("#pragma omp critical\n{\n");
+        str.append(getChild(0).toC());
+        str.append("}\n");
         return str.toString();
     }
 }

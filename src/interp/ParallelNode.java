@@ -27,55 +27,25 @@
 
 package interp;
 
-import parser.*;
-import java.util.ArrayList;
 import java.lang.StringBuilder;
 
-public class ForNode extends CodeNode {
-    int type;
+public class ParallelNode extends CodeNode {
 
-    public ForNode(int type) {
+    public ParallelNode()
+    {
         super(null);
-        this.type = type;
     }
 
     @Override
     public String toC() throws AplException {
         StringBuilder str = new StringBuilder();
-
-        int depth = 0;
-        CodeNode curr = this;
-        while (curr.getParent() != null) {
-            curr = curr.getParent();
-            ++depth;
+        str.append("#pragma omp parallel");
+        for (int i = 0; i < getNumChilds()-1; ++i) {
+            str.append(" ");
+            str.append(getChild(i).toC());
         }
-
-        if (type == AplLexer.PFOR) {
-            str.append("#pragma omp for ");
-            str.append(getChild(3).toC());
-            str.append("\n");
-        }
-
-        String it, init, size;
-        str.append("for (");
-
-        it = getChild(0).toC();
-        init = getChild(1).toC();
-        size = getChild(2).toC();
-
-        str.append(it);
-        str.append(" = ");
-        str.append(init);
-        str.append("; ");
-        str.append(it);
-        str.append(" < ");
-        str.append(size);
-        str.append("; ++");
-        str.append(it);
-        str.append(")\n");
-
-        str.append(getChild(4).toC());
-
+        str.append("\n");
+        str.append(getChild(getNumChilds()-1).toC());
         return str.toString();
     }
 }

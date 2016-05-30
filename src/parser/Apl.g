@@ -83,7 +83,13 @@ for_stmt	:	FOR^ id_atom IN! expr ':'! expr block_instructions END!
             ;
 
 // pfor statement
-pfor_stmt	:	PFOR^ id_atom IN! expr ':'! expr block_instructions END!
+pfor_stmt	:	PFOR^ id_atom IN! expr ':'! expr reduction? block_instructions END!
+            ;
+
+reduction   :   REDUCTION^ '('! operator ':'! paramlist ')'!
+            ;
+
+operator    :   (PLUS | MINUS | MUL | DIV | MOD | NOT | AND | OR)
             ;
 
 // while statement
@@ -107,7 +113,16 @@ free    :   FREE^ id_atom
         ;
 
 // Declare a parallel zone
-parallel:   PARALLEL^ SHARED! params PRIVATE! params block_instructions END!
+parallel:   PARALLEL^ pshared? pprivate? pthreads? block_instructions END!
+        ;
+
+pshared :   SHARED^ params
+        ;
+
+pprivate:   PRIVATE^ params
+        ;
+
+pthreads:   NUMTHREADS^ '('! num_expr ')'!
         ;
 
 // Grammar for expressions with boolean, relational and aritmetic operators
@@ -179,6 +194,7 @@ THEN	: 'then' ;
 ELSE	: 'else' ;
 FOR	    : 'for' ;
 PFOR	: 'pfor' ;
+REDUCTION: 'reduction' ;
 IN      : 'in';
 WHILE	: 'while' ;
 DO	    : 'do' ;
@@ -193,6 +209,7 @@ FREE    : 'free' ;
 PARALLEL: 'parallel' ;
 SHARED  : 'shared' ;
 PRIVATE : 'private' ;
+NUMTHREADS: 'num_threads' ;
 TRUE    : 'true' ;
 FALSE   : 'false';
 ID  	:	('a'..'z'|'A'..'Z'|'_') ('a'..'z'|'A'..'Z'|'0'..'9'|'_')* ;

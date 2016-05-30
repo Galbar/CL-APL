@@ -155,7 +155,12 @@ public class CodeAnalyzer {
                     } else {
                         var = new VariableNode(varID, varData);
                     }
-                    retval = new AssignNode(var, expr);
+
+                    if (stack.isShared(varID)) {
+                        retval = new CriticalNode(new AssignNode(var, expr));
+                    } else {
+                        retval = new AssignNode(var, expr);
+                    }
                 }
                 break;
             case AplLexer.IF:
@@ -205,7 +210,7 @@ public class CodeAnalyzer {
             case AplLexer.PFOR:
             case AplLexer.FOR:
                 {
-                    if (!inParallel() && node.getType() == AplLexer.PFOR) throw new AplException("It is prohibited to declare a parallel for outisde of a parallel block.");
+                    if (!inParallel(node) && node.getType() == AplLexer.PFOR) throw new AplException("It is prohibited to declare a parallel for outisde of a parallel block.");
                     retval = new ForNode(node.getType());
                     AplTree listInstr = node.getChild(node.getChildCount()-1);
                     BlockInstrNode block = new BlockInstrNode();
@@ -243,6 +248,25 @@ public class CodeAnalyzer {
                     retval.appendChild(init);
                     retval.appendChild(size);
 
+                    ParallelReductionNode red = new ParallelReductionNode();
+                    ArrayList<Boolean> state = new ArrayList<Boolean>();
+                    if (node.getChildCount() == 5) {
+                        AplTree redParams = node.getChild(3);
+
+                        OperatorNode op = new OperatorNode(redParams.getChild(0).getText());
+                        red.appendChild(op);
+
+                        for (int i = 1; i < redParams.getChildCount(); ++i) {
+                            int id = stack.getVariableID(redParams.getChild(i).getChild(0).getText());
+                            if (stack.isShared(id)) state.add(new Boolean(true));
+                            else state.add(new Boolean(false));
+                            stack.setShared(id, new Boolean(false));
+                            red.appendChild(new VariableNode(id, stack.getVariable(id)));
+                        }
+                    }
+
+                    retval.appendChild(red);
+
                     for (int i = 0; i < listInstr.getChildCount(); ++i) {
                         AplTree instr = listInstr.getChild(i);
                         CodeNode instrNode = parseInstruction(instr, function);
@@ -252,6 +276,15 @@ public class CodeAnalyzer {
                     }
 
                     retval.appendChild(block);
+
+                    if (node.getChildCount() == 5) {
+                        AplTree redParams = node.getChild(3);
+
+                        for (int i = 1; i < redParams.getChildCount(); ++i) {
+                            int id = stack.getVariableID(redParams.getChild(i).getChild(0).getText());
+                            stack.setShared(id, state.get(i-1));
+                        }
+                    }
                 }
                 break;
             case AplLexer.READ:
@@ -284,20 +317,48 @@ public class CodeAnalyzer {
                 break;
             case AplLexer.PARALLEL:
                 {
-                    if (inParallel()) throw new AplException("It is prohibited to declare a parallel block inside another parallel block.");
+                    if (inParallel(node)) throw new AplException("It is prohibited to declare a parallel block inside another parallel block.");
 
-                    AplTree sharedParams = node.getChild(0);
-                    for (int i = 0; i < sharedParams.getChildCount(); ++i) {
-                        stack.setShared(stack.getVariableID(sharedParams.getChild(i).getText()), new Boolean(true));
-                        sharedList.appendChild(new ConstantNode(sharedParams.getChild(i).getText(), new Data(Data.Type.VOID)));
+                    retval = new ParallelNode();
+                    AplTree sharedParams = null;
+
+                    for (int k = 0; k < node.getChildCount()-1; ++k) {
+                        AplTree currChild = node.getChild(k);
+
+                        switch (currChild.getType()) {
+                            case AplLexer.SHARED:
+                                {
+                                    sharedParams = currChild.getChild(0);
+                                    ParallelDefNode sharedList = new ParallelDefNode("shared");
+                                    for (int i = 0; i < sharedParams.getChildCount(); ++i) {
+                                        int id = stack.getVariableID(sharedParams.getChild(i).getChild(0).getText());
+                                        stack.setShared(id, new Boolean(true));
+                                        sharedList.appendChild(new VariableNode(id, stack.getVariable(id)));
+                                    }
+                                    retval.appendChild(sharedList);
+                                }
+                                break;
+                            case AplLexer.PRIVATE:
+                                {
+                                    AplTree privateParams = currChild.getChild(0);
+                                    ParallelDefNode privateList = new ParallelDefNode("private");
+                                    for (int i = 0; i < privateParams.getChildCount(); ++i) {
+                                        int id = stack.getVariableID(privateParams.getChild(i).getChild(0).getText());
+                                        privateList.appendChild(new VariableNode(id, stack.getVariable(id)));
+                                    }
+                                    retval.appendChild(privateList);
+                                }
+                                break;
+                            case AplLexer.NUMTHREADS:
+                                {
+                                    ParallelDefNode numThreads = new ParallelDefNode("num_threads");
+                                    numThreads.appendChild(parseExpression(currChild.getChild(0)));
+                                    retval.appendChild(numThreads);
+                                }
+                        }
                     }
 
-                    AplTree privateParams = node.getChild(1);
-                    for (int i = 0; i < privateParams.getChildCount(); ++i) {
-                        stack.setShared(stack.getVariableID(privateParams.getChild(i).getText()), new Boolean(true));
-                    }
-
-                    AplTree listInstr = node.getChild(2);
+                    AplTree listInstr = node.getChild(node.getChildCount()-1);
                     BlockInstrNode block = new BlockInstrNode();
 
                     for (int i = 0; i < listInstr.getChildCount(); ++i) {
@@ -308,15 +369,13 @@ public class CodeAnalyzer {
                         }
                     }
 
-                    for (int i = 0; i < sharedParams.getChildCount(); ++i) {
-                        stack.setShared(stack.getVariableID(sharedParams.getChild(i).getText()), new Boolean(false));
-                    }
+                    retval.appendChild(block);
 
-                    for (int i = 0; i < privateParams.getChildCount(); ++i) {
-                        stack.setShared(stack.getVariableID(privateParams.getChild(i).getText()), new Boolean(false));
+                    if (sharedParams != null) {
+                        for (int i = 0; i < sharedParams.getChildCount(); ++i) {
+                            stack.setShared(stack.getVariableID(sharedParams.getChild(i).getChild(0).getText()), new Boolean(false));
+                        }
                     }
-
-                    retval = new ParallelNode(shared, priv, block);
                 }
                 break;
             case AplLexer.RETURN:
@@ -386,16 +445,25 @@ public class CodeAnalyzer {
                         retval.appendChild(parseExpression(expression.getChild(1)));
                     }
 
-                    expr.appendChild(retval);
+                    if (stack.isShared(varID)) {
+                        expr.appendChild(new CriticalNode(retval));
+                    } else {
+                        expr.appendChild(retval);
+                    }
                 }
                 break;
             case AplLexer.WRITE:
                 {
-                    WriteNode retval = new WriteNode(parseExpression(expression.getChild(0)));
+                    CodeNode retval = new WriteNode(parseExpression(expression.getChild(0)));
 
                     // to <string>
                     if (expression.getChildCount() == 2) {
                         retval.appendChild(parseExpression(expression.getChild(1)));
+
+                        if (expression.getChild(1).getType() != AplLexer.IDARR 
+                            && stack.isShared(stack.getVariableID(expression.getChild(1).getText()))) {
+                            retval = new CriticalNode(retval);
+                        }
                     }
                     expr.appendChild(retval);
                 }

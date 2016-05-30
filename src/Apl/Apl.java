@@ -124,6 +124,7 @@ public class Apl{
                 ArrayList<FunctionNode> table = CA.getFunctionTable();
 
                 StringBuilder str = new StringBuilder();
+                str.append("#include <omp.h>\n");
                 str.append("#include <stdio.h>\n");
                 str.append("#include <stdlib.h>\n\n");
                 for (FunctionNode fn : table) {

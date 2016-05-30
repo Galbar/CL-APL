@@ -131,6 +131,7 @@ public class FunctionNode extends CodeNode {
             }
             str.append(";\n");
         }
+        str.append("\n");
 
         // Intructions
         for (int i = 0; i < getNumChilds(); ++i) {

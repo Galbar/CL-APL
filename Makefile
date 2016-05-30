@@ -79,7 +79,7 @@ exec:
 	chmod a+x $(EXEC)
 
 run:
-	bin/Apl -ast AST.txt -dot examples/openmp3.apl
+	bin/Apl -ast AST.txt -dot examples/openmp.apl
 
 dot: run
 	dot -T pdf -o out.pdf AST.txt

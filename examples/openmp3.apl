@@ -7,7 +7,7 @@ end
 func main(argc, argv)
     str = char[20]
     mult = 1
-    parallel shared(a,b,c) private(d,e)
+    parallel shared(str) private(mult)
         l = int[1]
         for l[0] in 1:argc
             read x from argv[l[0]]

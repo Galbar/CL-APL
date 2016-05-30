@@ -27,55 +27,28 @@
 
 package interp;
 
-import parser.*;
-import java.util.ArrayList;
 import java.lang.StringBuilder;
 
-public class ForNode extends CodeNode {
-    int type;
+public class ParallelDefNode extends CodeNode {
+    String value;
 
-    public ForNode(int type) {
+    public ParallelDefNode(String value)
+    {
         super(null);
-        this.type = type;
+        this.value = value;
     }
 
     @Override
     public String toC() throws AplException {
+        if (getNumChilds() == 0) return "";
         StringBuilder str = new StringBuilder();
-
-        int depth = 0;
-        CodeNode curr = this;
-        while (curr.getParent() != null) {
-            curr = curr.getParent();
-            ++depth;
+        str.append(value);
+        str.append("(");
+        for (int i = 0; i < getNumChilds(); ++i) {
+            if (i != 0) str.append(", ");
+            str.append(getChild(i).toC());
         }
-
-        if (type == AplLexer.PFOR) {
-            str.append("#pragma omp for ");
-            str.append(getChild(3).toC());
-            str.append("\n");
-        }
-
-        String it, init, size;
-        str.append("for (");
-
-        it = getChild(0).toC();
-        init = getChild(1).toC();
-        size = getChild(2).toC();
-
-        str.append(it);
-        str.append(" = ");
-        str.append(init);
-        str.append("; ");
-        str.append(it);
-        str.append(" < ");
-        str.append(size);
-        str.append("; ++");
-        str.append(it);
-        str.append(")\n");
-
-        str.append(getChild(4).toC());
-
+        str.append(")");
         return str.toString();
     }
 }
