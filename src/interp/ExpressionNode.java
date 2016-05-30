@@ -73,6 +73,7 @@ public class ExpressionNode extends CodeNode {
     @Override
     public String toC() throws AplException {
         StringBuilder str = new StringBuilder();
+        str.append("(");
         switch (getNumChilds()) {
             case 1:
                 str.append(getChild(0).toC());
@@ -89,6 +90,7 @@ public class ExpressionNode extends CodeNode {
                 str.append(" ");
                 str.append(getChild(2).toC());
         }
+        str.append(")");
         if (isInstr) {
             str.append(";\n");
         }

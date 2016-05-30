@@ -13,7 +13,7 @@ func main(argc, argv)
         end
 
         pfor i in 0:N reduction(+:sum)
-            sum = sum + a[i] * b[i]
+            sum = sum + (a[i] * b[i])
             nsum = nsum + 1
         end
     end
@@ -28,5 +28,5 @@ func main(argc, argv)
     write "Number of sums = " to str
     write nsum to str
     write str
-    free str 
+    free str
 end

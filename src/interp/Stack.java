@@ -75,7 +75,7 @@ public class Stack {
     public Stack() {
         StackAR = new LinkedList<ArrayList<Data>>();
         StackARShared = new LinkedList<ArrayList<Boolean>>();
-        StackST = new LinkedList<HashMap<String,Integer>>(); 
+        StackST = new LinkedList<HashMap<String,Integer>>();
         CurrentAR = null;
         CurrentARShared = null;
         SymbolTable = null;
@@ -119,8 +119,7 @@ public class Stack {
 
         if (d == null
             || CurrentAR.get(d).hasDependencies()
-            || CurrentAR.get(d).getType() != value.getType()
-            || CurrentAR.get(d).getType() == Data.Type.ARRAY) {
+            || !CurrentAR.get(d).equals(value)) {
             id = CurrentAR.size();
             SymbolTable.put(name, id); // New definition
             CurrentAR.add(value);

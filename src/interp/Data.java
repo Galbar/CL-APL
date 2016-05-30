@@ -179,4 +179,14 @@ public class Data {
         if (t1 == Data.Type.ARRAY && t2 == Data.Type.ARRAY && d1.getSubData().getType() != d2.getSubData().getType()) return new Data(Type.ARRAY, new Data(Type.VOID));
         return d1;
     }
+
+    public boolean equals(Data d) {
+        if (type == d.getType()) {
+            if (type == Type.ARRAY) {
+                return subData.equals(d.getSubData());
+            }
+            return true;
+        }
+        return false;
+    }
 }
