@@ -1,7 +1,6 @@
 func a(x)
-  r = q(x)
   if x > 1 then
-    return 1 + a(r)
+    return 1 + a(x-1)
   end
   return x
 end
@@ -10,7 +9,7 @@ func main ()
     c = 10
     write c
 
-    a(c)
+    c = a(c)
 
     l = int[c]
     l[0] = 5
@@ -19,15 +18,11 @@ func main ()
         read l[i]
     end
 
-    for v in l
-        write v
+    for v in 0:c
+        write l[v]
     end
 
     l2 = l
-
-    pfor v in l2
-        write v
-    end
 
     c = l[0]
 
