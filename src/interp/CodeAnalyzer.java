@@ -139,6 +139,9 @@ public class CodeAnalyzer {
 
                     ExpressionNode expr = parseExpression(node.getChild(1));
                     Data data = expr.getData();
+                    if (data.isReference()) {
+                        data = new Data(data);
+                    }
 
                     if (node.getChild(0).getType() == AplLexer.IDARR) {
                         varID = stack.setArrayElement(varname, data);
@@ -151,7 +154,7 @@ public class CodeAnalyzer {
 
                     if (node.getChild(0).getType() == AplLexer.IDARR) {
                         ExpressionNode delta = parseExpression(node.getChild(0).getChild(1));
-                        var = new ArrayAccessNode(varID, varData.getSubData(), delta);
+                        var = new ArrayAccessNode(new VariableNode(varID, varData), varData.getSubData(), delta);
                     } else {
                         var = new VariableNode(varID, varData);
                     }
@@ -239,7 +242,7 @@ public class CodeAnalyzer {
 
                     if (node.getChild(0).getType() == AplLexer.IDARR) {
                         ExpressionNode delta = parseExpression(node.getChild(0).getChild(1));
-                        var = new ArrayAccessNode(varID, varData.getSubData(), delta);
+                        var = new ArrayAccessNode(new VariableNode(varID, varData), varData.getSubData(), delta);
                     } else {
                         var = new VariableNode(varID, varData);
                     }
@@ -396,6 +399,10 @@ public class CodeAnalyzer {
         ExpressionNode expr = new ExpressionNode();
         int id;
         switch (expression.getType()) {
+            case AplLexer.EXPRGROUP:
+                expr = parseExpression(expression.getChild(0));
+                expr.makeGroup();
+                break;
             case AplLexer.INT:
             case AplLexer.FLOAT:
             case AplLexer.BOOLEAN:
@@ -433,7 +440,7 @@ public class CodeAnalyzer {
 
                     if (expression.getChild(0).getType() == AplLexer.IDARR) {
                         ExpressionNode delta = parseExpression(expression.getChild(0).getChild(1));
-                        var = new ArrayAccessNode(varID, varData.getSubData(), delta);
+                        var = new ArrayAccessNode(new VariableNode(varID, varData), varData.getSubData(), delta);
                     } else {
                         var = new VariableNode(varID, varData);
                     }
@@ -460,7 +467,7 @@ public class CodeAnalyzer {
                     if (expression.getChildCount() == 2) {
                         retval.appendChild(parseExpression(expression.getChild(1)));
 
-                        if (expression.getChild(1).getType() != AplLexer.IDARR 
+                        if (expression.getChild(1).getType() != AplLexer.IDARR
                             && stack.isShared(stack.getVariableID(expression.getChild(1).getText()))) {
                             retval = new CriticalNode(retval);
                         }
@@ -481,11 +488,19 @@ public class CodeAnalyzer {
                         data = new Data(Data.Type.CHAR);
                     } else if (name.equals("bool")) {
                         data = new Data(Data.Type.BOOL);
+                    } else if (stack.getVariable(stack.getVariableID(expression.getChild(0).getText())).getType() == Data.Type.ARRAY){
+                        id = stack.getVariableID(expression.getChild(0).getText());
+                        data = stack.getVariable(id);
+                        data.resolve();
+                        expr.appendChild(new ArrayAccessNode(new VariableNode(id, data), data.getSubData(), accessExpr));
+                        break;
                     } else {
                         id = stack.getVariableID(expression.getChild(0).getText());
-                        expr.appendChild(new ArrayAccessNode(id, stack.getVariable(id).getSubData(), accessExpr));
-                        break;
+                        throw new AplException("Accessing an element in an array of a variable `" + expression.getChild(0).getText() + "` of type `" + stack.getVariable(id).typeToString() +"`");
                     }
+
+                    assert null != data;
+                    assert Data.Type.VOID != data.getType();
                     expr.appendChild(new ArrayNode(new Data(Data.Type.ARRAY, data), accessExpr));
                     break;
                 }
@@ -526,6 +541,10 @@ public class CodeAnalyzer {
 
                         params = func.getChild(1);
                         for (int i = 0; i < params.getChildCount(); ++i) {
+                            if (params.getChild(i).getType() == AplLexer.PREF) {
+                                paramData.set(i, new Data(paramData.get(i)));
+                                paramData.get(i).setReference(true);
+                            }
                             stack.defineVariable(params.getChild(i).getChild(0).getText(), paramData.get(i));
                         }
 

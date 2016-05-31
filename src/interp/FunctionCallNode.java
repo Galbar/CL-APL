@@ -53,7 +53,13 @@ public class FunctionCallNode extends CodeNode {
             if (i != 0) {
                 str.append(", ");
             }
+            if (func.getVariables().get(i).isReference()) {
+                str.append("&(");
+            }
             str.append(expr.toC());
+            if (func.getVariables().get(i).isReference()) {
+                str.append(")");
+            }
         }
         str.append(" )");
 

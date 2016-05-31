@@ -42,8 +42,14 @@ public class VariableNode extends CodeNode {
     @Override
     public String toC() throws AplException {
         StringBuilder str = new StringBuilder();
+        if (data.isReference()) {
+            str.append("(*");
+        }
         str.append("var");
         str.append((new Integer(varID)).toString());
+        if (data.isReference()) {
+            str.append(")");
+        }
         return str.toString();
     }
 }

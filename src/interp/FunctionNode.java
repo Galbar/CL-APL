@@ -52,7 +52,7 @@ public class FunctionNode extends CodeNode {
         return numParams;
     }
 
-    public String getName() { 
+    public String getName() {
         if (name.equals("main")) return name;
         StringBuilder signatureBuild = new StringBuilder();
         signatureBuild.append(name);
@@ -61,7 +61,7 @@ public class FunctionNode extends CodeNode {
             signatureBuild.append("_");
             signatureBuild.append(param.typeToString().replaceAll("\\*","P"));
         }
-        return signatureBuild.toString(); 
+        return signatureBuild.toString();
     }
 
     public String getSignature() {
@@ -75,6 +75,9 @@ public class FunctionNode extends CodeNode {
                 signatureBuild.append(", ");
             }
             signatureBuild.append(param.typeToString());
+            if (param.isReference()) {
+                signatureBuild.append("*");
+            }
         }
 
         signatureBuild.append(" )");
@@ -97,6 +100,9 @@ public class FunctionNode extends CodeNode {
             dVar.resolve();
             if (i != 0) str.append(", ");
             str.append(dVar.typeToString());
+            if (dVar.isReference()) {
+                str.append("*");
+            }
             str.append(" var");
             str.append((new Integer(i)).toString());
         }

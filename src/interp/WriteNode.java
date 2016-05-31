@@ -42,8 +42,6 @@ public class WriteNode extends CodeNode {
 
     @Override
     public String toC() throws AplException {
-        this.expr.getData().resolve();
-
         StringBuilder str = new StringBuilder();
 
         if (getNumChilds() == 1) {

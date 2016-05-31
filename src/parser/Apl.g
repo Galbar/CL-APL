@@ -16,7 +16,9 @@ tokens {
     LIST_INSTR; // Block of instructions
     BOOLEAN;    // Boolean atom (for Boolean constants "true" or "false")
     PVALUE;     // Parameter by value in the list of parameters
+    PREF;     // Parameter by value in the list of parameters
     IDARR;      // An ID with array getter ([x])
+    EXPRGROUP; // a expression grouped by parenthesis
 }
 
 @header {
@@ -48,6 +50,7 @@ paramlist: param (','! param)*
 // Parameters with & as prefix are passed by reference
 // Only one node with the name of the parameter is created
 param   :   id_atom -> ^(PVALUE id_atom)
+        |   '&' id_atom -> ^(PREF id_atom)
         ;
 
 // A list of instructions, all of them gouped in a subtree
@@ -156,7 +159,7 @@ atom    :   id_atom
         |   funcall
         |   write
         |   read
-        |   '('! expr ')'!
+        |   '(' expr ')' -> ^(EXPRGROUP expr)
         ;
 
 

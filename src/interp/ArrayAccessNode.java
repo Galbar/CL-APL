@@ -30,15 +30,17 @@ package interp;
 import java.lang.StringBuilder;
 
 public class ArrayAccessNode extends CodeNode {
-    int varID;
+    VariableNode var;
     ExpressionNode expr;
 
-    public ArrayAccessNode(int varID, Data data, ExpressionNode expr)
+    public ArrayAccessNode(VariableNode var, Data data, ExpressionNode expr)
     {
         super(null);
-        this.varID = varID;
         this.expr = expr;
+        this.var = var;
+        appendChild(var);
         appendChild(expr);
+        assert data != null;
         this.data = data;
     }
 
@@ -47,8 +49,7 @@ public class ArrayAccessNode extends CodeNode {
         StringBuilder str = new StringBuilder();
         expr.getData().resolve();
 
-        str.append("var");
-        str.append((new Integer(varID)).toString());
+        str.append(var.toC());
         str.append("[");
 
         if (expr.getData().getType() != Data.Type.INT) {

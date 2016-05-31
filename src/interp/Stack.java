@@ -120,13 +120,15 @@ public class Stack {
         if (d == null
             || CurrentAR.get(d).hasDependencies()
             || !CurrentAR.get(d).equals(value)) {
+            if (d != null && CurrentAR.get(d).getType() == Data.Type.VOID) {
+                System.err.println("Warning: Type of variable `" + name + "` is VOID.");
+            }
             id = CurrentAR.size();
             SymbolTable.put(name, id); // New definition
             CurrentAR.add(value);
             CurrentARShared.add(shared);
         } else {
             if (CurrentAR.get(d).hasDependencies()) {
-                // TODO: TODO IT BETTER
                 System.err.println("Warning: Type of variable `" + name + "` depends on types that haven't been decided yet.");
             }
             id = d.intValue();

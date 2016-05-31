@@ -52,6 +52,7 @@ public class Data {
     private Type type;
     private Data subData = null;
     private ArrayList<Data> dependencies;
+    private boolean isRef = false;
 
     /** Constructor for integers */
     Data(Type type) { assert type != Type.ARRAY; this.type = type; }
@@ -189,4 +190,8 @@ public class Data {
         }
         return false;
     }
+
+    public void setReference(boolean value) { isRef = value; }
+
+    public boolean isReference() { return isRef; }
 }

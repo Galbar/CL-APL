@@ -32,6 +32,7 @@ import java.lang.StringBuilder;
 
 public class ExpressionNode extends CodeNode {
     private boolean isInstr = false;
+    private boolean isGroup = false;
 
     public ExpressionNode()
     {
@@ -43,7 +44,6 @@ public class ExpressionNode extends CodeNode {
 
         if (getNumChilds() == 1) {
             data = getChild(0).getData();
-            return data;
         } else {
             String op = "";
             try {
@@ -55,15 +55,12 @@ public class ExpressionNode extends CodeNode {
                 || op.equals("||") || op.equals("&&")
                 || op.equals("!")) {
                 data = new Data(Data.Type.BOOL);
-                return data;
-            } else if (getNumChilds() == 2) {
-                data = getChild(1).getData();
-                return data;
             } else {
                 data = Data.max(getChild(1).getData(), getChild(2).getData());
-                return data;
             }
         }
+        assert data != null;
+        return data;
     }
 
     public void setInstruction() {
@@ -73,7 +70,9 @@ public class ExpressionNode extends CodeNode {
     @Override
     public String toC() throws AplException {
         StringBuilder str = new StringBuilder();
-        str.append("(");
+        if (isGroup) {
+            str.append("(");
+        }
         switch (getNumChilds()) {
             case 1:
                 str.append(getChild(0).toC());
@@ -90,10 +89,14 @@ public class ExpressionNode extends CodeNode {
                 str.append(" ");
                 str.append(getChild(2).toC());
         }
-        str.append(")");
+        if (isGroup) {
+            str.append(")");
+        }
         if (isInstr) {
             str.append(";\n");
         }
         return str.toString();
     }
+
+    public void makeGroup() { isGroup = true; }
 }
