@@ -59,7 +59,6 @@ public class ExpressionNode extends CodeNode {
                 data = Data.max(getChild(1).getData(), getChild(2).getData());
             }
         }
-        assert data != null;
         return data;
     }
 

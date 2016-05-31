@@ -7,7 +7,15 @@ func main(argc, argv)
     nsum = 0
 
     parallel shared(a,b,sum,nsum) private(i) num_threads(4)
+        write "------------------------"
+        write get_thread_num()
+        write get_num_threads()
+        write "------------------------"
         pfor i in 0:N
+            write "########################"
+            write get_thread_num()
+            write get_num_threads()
+            write "########################"
             a[i] = i
             b[i] = i
         end

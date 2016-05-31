@@ -498,17 +498,22 @@ public class CodeAnalyzer {
                         id = stack.getVariableID(expression.getChild(0).getText());
                         throw new AplException("Accessing an element in an array of a variable `" + expression.getChild(0).getText() + "` of type `" + stack.getVariable(id).typeToString() +"`");
                     }
-
-                    assert null != data;
-                    assert Data.Type.VOID != data.getType();
                     expr.appendChild(new ArrayNode(new Data(Data.Type.ARRAY, data), accessExpr));
                     break;
                 }
             case AplLexer.FUNCALL:
                 {
                     String funcName = expression.getChild(0).getText();
-                    AplTree func = findFunction(funcName);
                     AplTree params = expression.getChild(1);
+                    if (params.getChildCount() == 0 && funcName.equals("get_num_threads")) {
+                        expr.appendChild(new ConstantNode("omp_get_num_threads()", new Data(Data.Type.INT)));
+                        break;
+                    } else if (params.getChildCount() == 0 && funcName.equals("get_thread_num")) {
+                        expr.appendChild(new ConstantNode("omp_get_thread_num()", new Data(Data.Type.INT)));
+                        break;
+                    }
+
+                    AplTree func = findFunction(funcName);
 
                     if (params.getChildCount() != func.getChild(1).getChildCount()) {
                         throw new AplException("Calling function `" + funcName + "` with a wrong number of parameters.");

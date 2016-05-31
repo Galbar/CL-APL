@@ -40,7 +40,6 @@ public class ArrayAccessNode extends CodeNode {
         this.var = var;
         appendChild(var);
         appendChild(expr);
-        assert data != null;
         this.data = data;
     }
 
