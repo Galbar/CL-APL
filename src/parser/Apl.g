@@ -55,7 +55,7 @@ param   :   id_atom -> ^(PVALUE id_atom)
 
 // A list of instructions, all of them gouped in a subtree
 block_instructions
-        :	 (instruction ';'?)* return_stmt?
+        :	 (instruction ';'?)* return_stmt? ';'?
             -> ^(LIST_INSTR instruction* return_stmt?)
         ;
 
